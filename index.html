@@ -1,0 +1,117 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <title>DSP-сцт(1)-Myshalov-Rodion</title>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-info ">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <div class="d-flex container-fluid justify-content-around navbar-nav mr-auto">
+                    <div class="nav-item active">
+                        <div class="dropdown">
+                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Файл
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                <button class="dropdown-item" id="open-file-btn">
+                                    <input id="file-input" type="file" style="display: none;" />Открыть
+                                </button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-item active">
+                        <div class="dropdown">
+                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Моделирование
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Детерминированных сигналов</button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Случайных сигналов</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-item active">
+                        <div class="dropdown">
+                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Фильтрация
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Удаление артефактов</button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Выделение полиномиальных трендов</button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Линейную фильтрацию сигналов с заданной конечной импульсной характеристикой</button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Линейную фильтрацию сигналов с заданной частотной характеристикой</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-item active">
+                        <div class="dropdown">
+                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Анализ
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Частотный</button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный корреляционный произвольных пар сигналов</button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный спектральный произвольных пар сигналов</button>
+                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Частотно-временной анализ сигналов с использованием Фурье-спектрограмм</button>
+                                 <button class="btn dropdown-item" href="#" style="white-space:normal;">Вейвлетограммы</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-item active">
+                        <div class="dropdown">
+                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Настройки
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                <a class="dropdown-item" href="#">Action</a>
+                                <a class="dropdown-item" href="#">Another action</a>
+                                <a class="dropdown-item" href="#">Something else here</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-item active">
+                        <div class="dropdown">
+                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Справка
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                <a class="dropdown-item" href="#" onclick="showAboutProgramInfo()">О программе</a>
+                                <a class="dropdown-item" href="#" onclick="showAboutAuthorInfo()">Автор</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <article class='containet-fluid' style="width: 100%; height: 100%;">
+
+    </article>
+    <script src="script.js"></script>
+</body>
+
+</html>

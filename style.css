@@ -1,0 +1,24 @@
+span {
+    font-style: 200px !important;
+}
+
+header {
+    font-style: 200px !important;
+}
+
+.close-btn:hover {
+    cursor: pointer;
+}
+
+* {
+    font-size: 25px !important;
+    font-family: monospace;
+}
+
+.btn {
+    width: 500px;
+}
+
+/* .dropdown-menu {
+    width: inherit;
+} */
