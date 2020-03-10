@@ -1,3 +1,8 @@
+const MILLISECONDS_PER_DAY = 86400000;
+const MILLISECONDS_PER_HOUR = 3600000;
+const MILLISECONDS_PER_MINUTE = 60000;
+const MILLISECONDS_PER_SECOND = 1000;
+
 let charts = [];
 let chartsCount = 0;
 let mousePosition;
@@ -25,6 +30,15 @@ function getName(filename) {
 
 function getChannelId(filename) {
     return getName(filename) + '-' + getExtension(filename);
+}
+
+function getSignalId(filename) {
+    return getName(filename) + '-' + getExtension(filename);
+}
+
+function restoreSignalName(id) {
+    let parts = id.split('-');
+    return parts[0] + '.' + parts[1];
 }
 
 function parseTxtFile(signalName, event) {
@@ -61,17 +75,20 @@ $('#file-input').change(function (event) {
             reader.onload = function (event) {
                 signals.push(parseTxtFile(file.name, event));
                 let channelId = getChannelId(file.name);
-                $('#signal-navigation-menu').append('<li class="container-fluid d-flex justify-content-center signal"> <div class="container-fluid btn-group dropleft"><button type="button" class="container-fluid btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + file.name + '</button><div class="dropdown-menu channels-menu"' + 'id="' + channelId + '">' + '</div></div>' + '</li>');
+                let signalId = getSignalId(signals[signals.length - 1].name);
+                $('#signal-navigation-menu').append('<li class="container-fluid d-flex justify-content-center signal"> <div class="container-fluid цbtn-group dropleft"><button type="button" class="container-fluid btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + file.name + '</button><div class="dropdown-menu channels-menu"' + 'id="' + channelId + '">' + '</div></div>' + '</li>');
                 if ($('#signal-navigation-menu').css('display') == 'none') {
                     $('#signal-navigation-menu').css('display', 'block');
                 }
                 signals[signals.length - 1].channels.forEach((channel) => {
                     $('#' + channelId).append('<button class="dropdown-item" type="button">' + channel.name + '</button>');
                 });
+                $('#signals-info-menu').append('<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="' + signalId + '-info">' + signals[signals.length - 1].name + '</button>');
             }
+
             // $('article').append('<div class="chartContainer " id="chart' + chartsCount + '"style="padding: 50px; position: absolute; resize: none; height: 430px; width: 660px; border: 2px solid black;"></div>');
             // charts.push(new CanvasJS.Chart("chart" + chartsCount, {
-            //     width: 550,
+            //     width: 550,DAY
             //     height: 350,
             //     backgroundColor: null,
             //     animationEnabled: true,
@@ -90,6 +107,8 @@ $('#file-input').change(function (event) {
             // }));
             // charts[charts.length - 1].render();
             // chartsCount++;
+
+
             $('.chartContainer').mousedown(function (event) {
                 isDown = true;
                 offset = [
@@ -98,6 +117,44 @@ $('#file-input').change(function (event) {
                 ];
             });
     };
+});
+
+function convertUnixtimeToDate(unixtime) {
+    let date = new Date(unixtime);
+    let year = date.getFullYear();
+    let month = date.getMonth();
+    let day = date.getDate();
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    let seconds = + date.getSeconds();
+    let milliseconds = + date.getMilliseconds();
+    return day + '-' + month + '-' + year + ' ' + hours + ':' + minutes + ':' + seconds + '.' + milliseconds;
+}
+
+function convertDifferenceToDate(unixtime) {
+    return Math.floor(unixtime / MILLISECONDS_PER_DAY).toString() + '-' +
+        Math.floor(unixtime / MILLISECONDS_PER_HOUR).toString() + '-' +
+        Math.floor(unixtime / MILLISECONDS_PER_MINUTE).toString() + '-' +
+        Math.floor(unixtime / MILLISECONDS_PER_SECOND).toString() + '.' +
+        unixtime % MILLISECONDS_PER_SECOND.toString();
+}
+
+$('#signals-info-menu').on('click', '.signal-info-btn', function () {
+    let restoredId = restoreSignalName(this.id);
+    let restoredSignal = signals.find((signal) => {
+        return restoredId == signal.name;
+    });
+    $('.modal-title').text('Информация о сигнале ' + restoredSignal.name);
+    $('.modal-body').html('Общее число каналов: ' + restoredSignal.channelsCount + ' <br \/>Общее количество отсчетов: ' + restoredSignal.measuresCount
+        + '<br \/>Частота дискретизации: ' + restoredSignal.frequency + ' Гц (шаг между отсчетами ' + 1 / restoredSignal.frequency + ' сек)' +
+        '<br \/>Дата и время начала записи: ' + convertUnixtimeToDate(restoredSignal.recordingTime) + '<br \/>Дата и время окончания записи: ' +
+        convertUnixtimeToDate(restoredSignal.recordingTime + restoredSignal.measuresCount * (1 / restoredSignal.frequency)) +
+        '<br \/>Длительность: ' + convertDifferenceToDate((restoredSignal.recordingTime + restoredSignal.measuresCount * (1 / restoredSignal.frequency)) - restoredSignal.recordingTime) + '<hr>');
+    $('.modal-body').append('<table class="table table-bordered"><thead><tr><th scope="col">№</th><th scope="col">Имя</th><th scope="col">Источник</th></tr></thead><tbody id="channels-table"></tbody></table>')
+    restoredSignal.channels.forEach((channel, index) => {
+        $('#channels-table').append('<tr><th scope="row">' + (index + 1) + '</th><td>' + channel.name + '</td><td>' + restoredSignal.name + '</td></tr>');
+    })
+    $('#signal-info-modal').modal();
 });
 
 function getChartData(fileData, name) {
