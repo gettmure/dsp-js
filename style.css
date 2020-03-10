@@ -11,14 +11,23 @@ header {
 }
 
 * {
-    font-size: 25px !important;
+    font-size: 18px !important;
     font-family: monospace;
 }
 
-.btn {
-    width: 500px;
+#signal-navigation-menu {
+    padding: 0%;
+    display: none;
+    transition: 1s;
+    top: 25%;
+    position: fixed;
+    width: 200px;
+    right: 0px;
 }
 
-/* .dropdown-menu {
-    width: inherit;
-} */
+.signal {
+    margin-bottom: 5px;
+}
+
+.channels-menu {
+}
