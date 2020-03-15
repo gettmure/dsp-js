@@ -9,6 +9,7 @@ let mousePosition;
 let offset = [0, 0];
 let isDown = false;
 let signals = [];
+let signalsCount = 0;
 
 function showAboutProgramInfo() {
     alert('DSP - программа для анализа сигналов')
@@ -36,14 +37,16 @@ function getSignalId(filename) {
     return getName(filename) + '-' + getExtension(filename);
 }
 
-function restoreSignalName(id) {
+function getValidSignalId(id) {
     let parts = id.split('-');
-    return parts[0] + '.' + parts[1];
+    return parts[0];
 }
 
 function parseTxtFile(signalName, event) {
     let fileData = event.target.result.split('\n').filter(line => line[0] != '#');
-    let unixtime = Date.parse(fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3-$2-$1") + 'T' + fileData[4]);
+    console.log(fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3-$2-$1") + 'T' + fileData[4])
+    let unixtime = Date.parse(fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3/$2/$1") + ' ' + fileData[4] + 'Z');
+    console.log(unixtime)
     let signal = new Signal(signalName, parseInt(fileData[0]), parseInt(fileData[1]), parseInt(fileData[2]), unixtime);
     fileData[5].split(';').forEach(channelName => {
         if (channelName == "") {
@@ -74,14 +77,14 @@ $('#file-input').change(function (event) {
             reader.readAsText(file, 'UTF-8');
             reader.onload = function (event) {
                 signals.push(parseTxtFile(file.name, event));
-                let channelId = getChannelId(file.name);
-                let signalId = getSignalId(signals[signals.length - 1].name);
-                $('#signal-navigation-menu').append('<li class="container-fluid d-flex justify-content-center signal"> <div class="container-fluid цbtn-group dropleft"><button type="button" class="container-fluid btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + file.name + '</button><div class="dropdown-menu channels-menu"' + 'id="' + channelId + '">' + '</div></div>' + '</li>');
+                let signalId = 'signal' + signalsCount;
+                signals[signals.length - 1].id = signalId;
+                $('#signal-navigation-menu').append('<li class="container-fluid d-flex justify-content-center signal"> <div class="container-fluid цbtn-group dropleft"><button type="button" class="container-fluid btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + file.name + '</button><div class="dropdown-menu channels-menu"' + 'id="' + signalId + '">' + '</div></div>' + '</li>');
                 if ($('#signal-navigation-menu').css('display') == 'none') {
                     $('#signal-navigation-menu').css('display', 'block');
                 }
                 signals[signals.length - 1].channels.forEach((channel) => {
-                    $('#' + channelId).append('<button class="dropdown-item" type="button">' + channel.name + '</button>');
+                    $('#' + signalId).append('<button class="dropdown-item" type="button">' + channel.name + '</button>');
                 });
                 $('#signals-info-menu').append('<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="' + signalId + '-info">' + signals[signals.length - 1].name + '</button>');
             }
@@ -116,13 +119,15 @@ $('#file-input').change(function (event) {
                     this.offsetTop - event.clientY
                 ];
             });
+            signalsCount++;
     };
 });
 
 function convertUnixtimeToDate(unixtime) {
-    let date = new Date(unixtime);
+    let date = new Date(unixtime * 1000);
+    console.log(date)
     let year = date.getFullYear();
-    let month = date.getMonth();
+    let month = date.getMonth() + 1;
     let day = date.getDate();
     let hours = date.getHours();
     let minutes = date.getMinutes();
@@ -140,9 +145,9 @@ function convertDifferenceToDate(unixtime) {
 }
 
 $('#signals-info-menu').on('click', '.signal-info-btn', function () {
-    let restoredId = restoreSignalName(this.id);
+    let restoredId = getValidSignalId(this.id);
     let restoredSignal = signals.find((signal) => {
-        return restoredId == signal.name;
+        return restoredId == signal.id;
     });
     $('.modal-title').text('Информация о сигнале ' + restoredSignal.name);
     $('.modal-body').html('Общее число каналов: ' + restoredSignal.channelsCount + ' <br \/>Общее количество отсчетов: ' + restoredSignal.measuresCount

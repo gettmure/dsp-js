@@ -6,5 +6,6 @@ class Signal {
         this.frequency = frequency;
         this.recordingTime = unixtime;
         this.channels = [];
+        this.id;
     }
 }
