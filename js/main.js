@@ -29,14 +29,6 @@ function getName(filename) {
     return parts[0];
 }
 
-function getChannelId(filename) {
-    return getName(filename) + '-' + getExtension(filename);
-}
-
-function getSignalId(filename) {
-    return getName(filename) + '-' + getExtension(filename);
-}
-
 function getValidSignalId(id) {
     let parts = id.split('-');
     return parts[0];
@@ -44,10 +36,8 @@ function getValidSignalId(id) {
 
 function parseTxtFile(signalName, event) {
     let fileData = event.target.result.split('\n').filter(line => line[0] != '#');
-    console.log(fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3-$2-$1") + 'T' + fileData[4])
-    let unixtime = Date.parse(fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3/$2/$1") + ' ' + fileData[4] + 'Z');
-    console.log(unixtime)
-    let signal = new Signal(signalName, parseInt(fileData[0]), parseInt(fileData[1]), parseInt(fileData[2]), unixtime);
+    let unixtime = Date.parse(fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3/$2/$1") + ' ' + fileData[4]);
+    let signal = new Signal(signalName, parseInt(fileData[0]), parseInt(fileData[1]), parseFloat(fileData[2]), unixtime);
     fileData[5].split(';').forEach(channelName => {
         if (channelName == "") {
             return;
@@ -84,6 +74,7 @@ $('#file-input').change(function (event) {
                     $('#signal-navigation-menu').css('display', 'block');
                 }
                 signals[signals.length - 1].channels.forEach((channel) => {
+                    console.log(channel.name)
                     $('#' + signalId).append('<button class="dropdown-item" type="button">' + channel.name + '</button>');
                 });
                 $('#signals-info-menu').append('<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="' + signalId + '-info">' + signals[signals.length - 1].name + '</button>');
@@ -124,37 +115,56 @@ $('#file-input').change(function (event) {
 });
 
 function convertUnixtimeToDate(unixtime) {
-    let date = new Date(unixtime * 1000);
-    console.log(date)
-    let year = date.getFullYear();
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    let seconds = + date.getSeconds();
-    let milliseconds = + date.getMilliseconds();
-    return day + '-' + month + '-' + year + ' ' + hours + ':' + minutes + ':' + seconds + '.' + milliseconds;
+    const date = new Date(unixtime);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = + date.getSeconds();
+    const milliseconds = + date.getMilliseconds();
+
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}.${milliseconds}`;
 }
 
-function convertDifferenceToDate(unixtime) {
-    return Math.floor(unixtime / MILLISECONDS_PER_DAY).toString() + '-' +
-        Math.floor(unixtime / MILLISECONDS_PER_HOUR).toString() + '-' +
-        Math.floor(unixtime / MILLISECONDS_PER_MINUTE).toString() + '-' +
-        Math.floor(unixtime / MILLISECONDS_PER_SECOND).toString() + '.' +
-        unixtime % MILLISECONDS_PER_SECOND.toString();
+function getDatesDifference(unixtime) {
+    const days = Math.floor(unixtime / MILLISECONDS_PER_DAY);
+    unixtime -= days * MILLISECONDS_PER_DAY;
+    const hours = Math.floor(unixtime / MILLISECONDS_PER_HOUR);
+    unixtime -= hours * MILLISECONDS_PER_HOUR;
+    const minutes = Math.floor(unixtime / MILLISECONDS_PER_MINUTE);
+    unixtime -= minutes * MILLISECONDS_PER_MINUTE;
+    const seconds = Math.floor(unixtime / MILLISECONDS_PER_SECOND);
+    unixtime -= seconds * MILLISECONDS_PER_SECOND;
+    const milliseconds = unixtime - seconds;
+
+    return `${days} дней ${hours} часов ${minutes} минут ${seconds} секунд ${milliseconds} миллисекунд`;
 }
 
 $('#signals-info-menu').on('click', '.signal-info-btn', function () {
-    let restoredId = getValidSignalId(this.id);
-    let restoredSignal = signals.find((signal) => {
+    const restoredId = getValidSignalId(this.id);
+    const restoredSignal = signals.find((signal) => {
         return restoredId == signal.id;
     });
-    $('.modal-title').text('Информация о сигнале ' + restoredSignal.name);
-    $('.modal-body').html('Общее число каналов: ' + restoredSignal.channelsCount + ' <br \/>Общее количество отсчетов: ' + restoredSignal.measuresCount
-        + '<br \/>Частота дискретизации: ' + restoredSignal.frequency + ' Гц (шаг между отсчетами ' + 1 / restoredSignal.frequency + ' сек)' +
-        '<br \/>Дата и время начала записи: ' + convertUnixtimeToDate(restoredSignal.recordingTime) + '<br \/>Дата и время окончания записи: ' +
-        convertUnixtimeToDate(restoredSignal.recordingTime + restoredSignal.measuresCount * (1 / restoredSignal.frequency)) +
-        '<br \/>Длительность: ' + convertDifferenceToDate((restoredSignal.recordingTime + restoredSignal.measuresCount * (1 / restoredSignal.frequency)) - restoredSignal.recordingTime) + '<hr>');
+    const name = restoredSignal.name;
+    const channelsCount = restoredSignal.channelsCount;
+    const pointsCount = restoredSignal.measuresCount;
+    const frequency = restoredSignal.frequency;
+    const period = 1 / frequency;
+    const recordedAt = restoredSignal.recordingTime;
+    const startDate = new Date(recordedAt);
+    const endDate = new Date(recordedAt + pointsCount * period);
+    const duration = getDatesDifference(endDate.getTime() - startDate.getTime());
+
+    $('.modal-title').text(`Информация о сигнале ${name}`);
+    $('.modal-body').html(`
+        Общее число каналов: ${channelsCount} <br>
+        Общее количество отсчетов: ${pointsCount} <br>
+        Частота дискретизации: ${frequency} Гц (шаг между отсчетами ${period} сек <br>
+        Дата и время начала записи: ${startDate} <br>
+        Дата и время окончания записи: ${endDate} <br>
+        Длительность: ${duration} <br>
+    `)
     $('.modal-body').append('<table class="table table-bordered"><thead><tr><th scope="col">№</th><th scope="col">Имя</th><th scope="col">Источник</th></tr></thead><tbody id="channels-table"></tbody></table>')
     restoredSignal.channels.forEach((channel, index) => {
         $('#channels-table').append('<tr><th scope="row">' + (index + 1) + '</th><td>' + channel.name + '</td><td>' + restoredSignal.name + '</td></tr>');
