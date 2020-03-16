@@ -1,4 +1,4 @@
-class Signal {
+export class Signal {
     constructor(name, channelsCount, measuresCount, frequency, unixtime) {
         this.name = name;
         this.channelsCount = channelsCount;

@@ -1,3 +1,6 @@
+import { Signal } from './Signal.js'
+import { Channel } from './Channel.js'
+
 const MILLISECONDS_PER_DAY = 86400000;
 const MILLISECONDS_PER_HOUR = 3600000;
 const MILLISECONDS_PER_MINUTE = 60000;
@@ -34,9 +37,17 @@ function getValidSignalId(id) {
     return parts[0];
 }
 
+function parseDateTime(s) {
+    const dateElements = s.split(/\D/);
+    return new Date(Date.UTC(dateElements[0], dateElements[1] - 1, dateElements[2], dateElements[3], dateElements[4], dateElements[5]));
+  }
+
 function parseTxtFile(signalName, event) {
-    let fileData = event.target.result.split('\n').filter(line => line[0] != '#');
-    let unixtime = Date.parse(fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3/$2/$1") + ' ' + fileData[4]);
+    const fileData = event.target.result.split('\n').filter(line => line[0] != '#');
+    const startDate = fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3-$2-$1");
+    const startTime = fileData[4];
+    const date = `${startDate} ${startTime}`;
+    const unixtime = parseDateTime(date).getTime();
     let signal = new Signal(signalName, parseInt(fileData[0]), parseInt(fileData[1]), parseFloat(fileData[2]), unixtime);
     fileData[5].split(';').forEach(channelName => {
         if (channelName == "") {
@@ -69,15 +80,28 @@ $('#file-input').change(function (event) {
                 signals.push(parseTxtFile(file.name, event));
                 let signalId = 'signal' + signalsCount;
                 signals[signals.length - 1].id = signalId;
-                $('#signal-navigation-menu').append('<li class="container-fluid d-flex justify-content-center signal"> <div class="container-fluid цbtn-group dropleft"><button type="button" class="container-fluid btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + file.name + '</button><div class="dropdown-menu channels-menu"' + 'id="' + signalId + '">' + '</div></div>' + '</li>');
+                $('#signal-navigation-menu').append(`
+                    <li class="container-fluid d-flex justify-content-center signal"> 
+                        <div class="container-fluid цbtn-group dropleft">
+                            <button type="button" class="container-fluid btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                ${file.name}
+                            </button>
+                            <div class="dropdown-menu channels-menu" id="${signalId}">
+                            </div>
+                        </div>
+                    </li>
+                `);
                 if ($('#signal-navigation-menu').css('display') == 'none') {
                     $('#signal-navigation-menu').css('display', 'block');
                 }
                 signals[signals.length - 1].channels.forEach((channel) => {
-                    console.log(channel.name)
-                    $('#' + signalId).append('<button class="dropdown-item" type="button">' + channel.name + '</button>');
+                    $(`#${signalId}`).append(`<button class="dropdown-item" type="button">${channel.name}</button>`);
                 });
-                $('#signals-info-menu').append('<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="' + signalId + '-info">' + signals[signals.length - 1].name + '</button>');
+                $('#signals-info-menu').append(`
+                    <button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${signalId}-info">
+                        ${signals[signals.length - 1].name}
+                    </button>
+                `);
             }
 
             // $('article').append('<div class="chartContainer " id="chart' + chartsCount + '"style="padding: 50px; position: absolute; resize: none; height: 430px; width: 660px; border: 2px solid black;"></div>');
@@ -164,10 +188,40 @@ $('#signals-info-menu').on('click', '.signal-info-btn', function () {
         Дата и время начала записи: ${startDate} <br>
         Дата и время окончания записи: ${endDate} <br>
         Длительность: ${duration} <br>
-    `)
-    $('.modal-body').append('<table class="table table-bordered"><thead><tr><th scope="col">№</th><th scope="col">Имя</th><th scope="col">Источник</th></tr></thead><tbody id="channels-table"></tbody></table>')
+    `);
+    $('.modal-body').append(`
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">
+                    №
+                    </th>
+                    <th scope="col">
+                    Имя
+                    </th>
+                    <th scope="col">
+                    Источник
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="channels-table">
+            </tbody>
+        </table>
+    `);
     restoredSignal.channels.forEach((channel, index) => {
-        $('#channels-table').append('<tr><th scope="row">' + (index + 1) + '</th><td>' + channel.name + '</td><td>' + restoredSignal.name + '</td></tr>');
+        $('#channels-table').append(`
+            <tr>
+                <th scope="row">
+                    ${index + 1}
+                </th>
+                <td>
+                    ${channel.name}
+                </td>
+                <td>
+                    ${restoredSignal.name}
+                </td>
+            </tr>
+        `);
     })
     $('#signal-info-modal').modal();
 });
