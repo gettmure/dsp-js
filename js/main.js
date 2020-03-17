@@ -5,8 +5,8 @@ const MILLISECONDS_PER_DAY = 86400000;
 const MILLISECONDS_PER_HOUR = 3600000;
 const MILLISECONDS_PER_MINUTE = 60000;
 const MILLISECONDS_PER_SECOND = 1000;
+const COLORS_COUNT = 16777215;
 
-let charts = [];
 let chartsCount = 0;
 let mousePosition;
 let offset = [0, 0];
@@ -37,10 +37,14 @@ function getValidSignalId(id) {
     return parts[0];
 }
 
-function parseDateTime(s) {
-    const dateElements = s.split(/\D/);
-    return new Date(Date.UTC(dateElements[0], dateElements[1] - 1, dateElements[2], dateElements[3], dateElements[4], dateElements[5]));
-  }
+function parseDateTime(date) {
+    const dateElements = date.split(/\D/);
+    return new Date(dateElements[0], dateElements[1] - 1, dateElements[2], dateElements[3], dateElements[4], dateElements[5]);
+}
+
+function getRandomColor() {
+    return `#${Math.floor(Math.random() * COLORS_COUNT).toString(16)}`;
+}
 
 function parseTxtFile(signalName, event) {
     const fileData = event.target.result.split('\n').filter(line => line[0] != '#');
@@ -60,15 +64,32 @@ function parseTxtFile(signalName, event) {
             break;
         }
         for (let channelIndex = 0; channelIndex < signal.channelsCount; channelIndex++) {
-            let data = fileData[lineIndex].split(' ');
+            const data = fileData[lineIndex].split(' ');
             signal.channels[channelIndex].values.push(parseFloat(data[channelIndex]));
         }
     }
     return signal;
 }
 
+function getChartData(channel, period) {
+    let data = [];
+    let dataPoints = [];
+    let step = 0;
+    for (let i = 0; i < channel.values.length; i += 1) {
+        dataPoints.push({
+            x: step,
+            y: channel.values[i],
+        });
+        step += period;
+    }
+    let dataSeries = { type: 'line' };
+    dataSeries.dataPoints = dataPoints;
+    data.push(dataSeries);
+    return data;
+}
+
 $('#file-input').change(function (event) {
-    let file = event.target.files[0];
+    const file = event.target.files[0];
     if (!file) {
         return;
     }
@@ -95,7 +116,36 @@ $('#file-input').change(function (event) {
                     $('#signal-navigation-menu').css('display', 'block');
                 }
                 signals[signals.length - 1].channels.forEach((channel) => {
-                    $(`#${signalId}`).append(`<button class="dropdown-item" type="button">${channel.name}</button>`);
+                    const chartId = `chart${chartsCount}`;
+                    $(`#${signalId}`).append(`<button class="dropdown-item channel-btn" type="button" id="${chartId}">${channel.name}</button>`);
+                    $('article').append(`
+                        <div class="chartContainer"
+                            id="chart${chartsCount}-container" 
+                            style="display: none; padding: 50px; position: absolute; resize: none; height: 430px; width: 660px; border: 2px solid black;">
+                        </div>
+                    `);
+                    channel.chart =
+                    {
+                        plot: new CanvasJS.Chart(`chart${chartsCount}-container`, {
+                            width: 550,
+                            height: 350,
+                            animationEnabled: false,
+                            zoomEnabled: true,
+                            zoomType: "xy",
+                            title: {
+                                text: channel.name,
+                            },
+                            axisY: {
+                                includeZero: true,
+                            },
+                            axisX: {
+                                includeZero: true,
+                            },
+                            data: getChartData(channel, signals[signals.length - 1].period),
+                        }),
+                        id: chartId
+                    }
+                    chartsCount++;
                 });
                 $('#signals-info-menu').append(`
                     <button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${signalId}-info">
@@ -103,49 +153,40 @@ $('#file-input').change(function (event) {
                     </button>
                 `);
             }
-
-            // $('article').append('<div class="chartContainer " id="chart' + chartsCount + '"style="padding: 50px; position: absolute; resize: none; height: 430px; width: 660px; border: 2px solid black;"></div>');
-            // charts.push(new CanvasJS.Chart("chart" + chartsCount, {
-            //     width: 550,DAY
-            //     height: 350,
-            //     backgroundColor: null,
-            //     animationEnabled: true,
-            //     zoomEnabled: true,
-            //     zoomType: "xy",
-            //     title: {
-            //         text: getName(file.name)
-            //     },
-            //     axisY: {
-            //         includeZero: true
-            //     },
-            //     axisX: {
-            //         includeZero: true
-            //     },
-            //     data: getChartData(fileData, file.name)
-            // }));
-            // charts[charts.length - 1].render();
-            // chartsCount++;
-
-
-            $('.chartContainer').mousedown(function (event) {
-                isDown = true;
-                offset = [
-                    this.offsetLeft - event.clientX,
-                    this.offsetTop - event.clientY
-                ];
-            });
             signalsCount++;
     };
 });
 
-function convertUnixtimeToDate(unixtime) {
-    const date = new Date(unixtime);
+$(document).on('click', '.channel-btn', function () {
+    const signalId = $(this).parent().attr('id');
+    const chartId = this.id;
+    const signal = signals.find((signal) => {
+        return signalId == signal.id;
+    });
+    const chart = signal.channels.find((channel) => {
+        return chartId == channel.chart.id;
+    }).chart;
+    chart.plot.render();
+    console.log(chart)
+    $(`#${chart.id}-container`).css({
+        'display': 'block',
+        'background-color': getRandomColor()
+    });
+    $('.canvasjs-chart-credit').remove();
+});
+
+function getValidDate(date) {
     const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const seconds = + date.getSeconds();
+    let month = date.getMonth() + 1;
+    Math.floor(month / 10) == 0 ? month = `0${month}` : month;
+    let day = date.getDate();
+    Math.floor(day / 10) == 0 ? day = `0${day}` : day;
+    let hours = date.getHours();
+    Math.floor(hours / 10) == 0 ? hours = `0${hours}` : hours;
+    let minutes = date.getMinutes();
+    Math.floor(minutes / 10) == 0 ? minutes = `0${minutes}` : minutes;
+    let seconds = + date.getSeconds();
+    Math.floor(seconds / 10) == 0 ? seconds = `0${seconds}` : seconds;
     const milliseconds = + date.getMilliseconds();
 
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}.${milliseconds}`;
@@ -185,8 +226,8 @@ $('#signals-info-menu').on('click', '.signal-info-btn', function () {
         Общее число каналов: ${channelsCount} <br>
         Общее количество отсчетов: ${pointsCount} <br>
         Частота дискретизации: ${frequency} Гц (шаг между отсчетами ${period} сек <br>
-        Дата и время начала записи: ${startDate} <br>
-        Дата и время окончания записи: ${endDate} <br>
+        Дата и время начала записи: ${getValidDate(startDate)} <br>
+        Дата и время окончания записи: ${getValidDate(endDate)} <br>
         Длительность: ${duration} <br>
     `);
     $('.modal-body').append(`
@@ -226,33 +267,16 @@ $('#signals-info-menu').on('click', '.signal-info-btn', function () {
     $('#signal-info-modal').modal();
 });
 
-function getChartData(fileData, name) {
-    let data = [];
-    let dataSeries = { type: 'line' };
-    switch (getExtension(name)) {
-        case 'txt':
-        // dataArray = fileData.split(' ').map(Number);
-        // length = dataArray.length;
-        // if (length % 2 == 1) {
-        //     alert('WRONG DATA');
-        //     return;
-        // }
-        // dataPoints = [];
-        // for (let i = 0; i < length; i += 2) {
-        //     if (i == length) break;
-        //     dataPoints.push({
-        //         x: dataArray[i],
-        //         y: dataArray[i + 1],
-        //     });
-        // }
-        // dataSeries.dataPoints = dataPoints;
-        // data.push(dataSeries);
-        // return data;
-    }
-}
-
 $('#open-file-btn').click(function () {
     document.getElementById('file-input').click();
+});
+
+$(document).on('mousedown', '.chartContainer', function (event) {
+    isDown = true;
+    offset = [
+        this.offsetLeft - event.clientX,
+        this.offsetTop - event.clientY
+    ];
 });
 
 $(document).mouseup(function () {
