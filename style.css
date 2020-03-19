@@ -1,15 +1,3 @@
-span {
-    font-style: 200px !important;
-}
-
-header {
-    font-style: 200px !important;
-}
-
-.close-btn:hover {
-    cursor: pointer;
-}
-
 * {
     font-size: 18px;
     font-family: monospace;
@@ -19,7 +7,7 @@ header {
     padding: 0%;
     display: none;
     transition: 1s;
-    top: 25%;
+    top: 70px;
     position: fixed;
     width: 200px;
     right: 0px;
@@ -33,12 +21,12 @@ header {
     font-size: 15px !important;
 }
 
-article {
-    flex-wrap: wrap;
+.channels-menu {
+    width: fit-content !important;
 }
 
-.canvasjs-chart-container {
-    margin: 52px;
+article {
+    flex-wrap: wrap;
 }
 
 .chartContainer {
@@ -48,4 +36,5 @@ article {
     height: 430px; 
     width: 630px; 
     border: 2px solid black;
+    padding: 52px;
 }
