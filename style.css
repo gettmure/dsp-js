@@ -11,7 +11,7 @@ header {
 }
 
 * {
-    font-size: 18px !important;
+    font-size: 18px;
     font-family: monospace;
 }
 
@@ -23,11 +23,29 @@ header {
     position: fixed;
     width: 200px;
     right: 0px;
+    z-index: 999;
 }
 
-.signal {
+.signal > div > button {
     margin-bottom: 5px;
+    word-wrap: normal;
+    white-space: normal;
+    font-size: 15px !important;
 }
 
-.channels-menu {
+article {
+    overflow: visible;
+}
+
+.canvasjs-chart-container {
+    margin: 52px;
+}
+
+.chartContainer {
+    float: inline-start; 
+    display: none; 
+    resize: none; 
+    height: 430px; 
+    width: 630px; 
+    border: 2px solid black;
 }
