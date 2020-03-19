@@ -4,7 +4,7 @@ let chartsCount = 0;
 let signalsCount = 0;
 
 export function showCharts(signals, element) {
-    const signalId = $(element).parent().attr('id');
+	const signalId = $(element).parent().attr('id');
 	const chartId = element.id;
 	const signal = signals.find((signal) => {
 		return signalId == signal.id;
@@ -91,7 +91,7 @@ export function createCharts(fileName, signal) {
 			${signal.name}
     </button>
   `);
-    signalsCount++;
+	signalsCount++;
 }
 
 function getChartData(channel, period) {
