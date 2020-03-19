@@ -116,7 +116,7 @@ $('#file-input').change(function (event) {
 					const chartId = `chart${chartsCount}`;
 					$(`#${signalId}`).append(`<button class="dropdown-item channel-btn" type="button" id="${chartId}">${channel.name}</button>`);
 					$('article').append(`
-                        <div class="chartContainer" id="${chartId}-container">
+                        <div class="chartContainer mb-1" id="${chartId}-container">
                         </div>
                     `);
 					channel.chart =

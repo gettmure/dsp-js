@@ -34,7 +34,7 @@ header {
 }
 
 article {
-    overflow: visible;
+    flex-wrap: wrap;
 }
 
 .canvasjs-chart-container {
