@@ -6,8 +6,8 @@ function parseDateTime(date) {
 	return new Date(dateElements[0], dateElements[1] - 1, dateElements[2], dateElements[3], dateElements[4], dateElements[5]);
 }
 
-export function parseTxtFile(signalName, event) {
-	const fileData = event.target.result.split('\n').filter(line => line[0] != '#');
+export function parseTxtFile(signalName, fileContent) {
+	const fileData = fileContent.split('\n').filter(line => line[0] != '#');
 	const startDate = fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3-$2-$1");
 	const startTime = fileData[4];
 	const date = `${startDate} ${startTime}`;

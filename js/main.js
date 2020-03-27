@@ -26,20 +26,45 @@ function getName(filename) {
 	return parts[0];
 }
 
+function readTxtFile(file) {
+	const fileReader = new FileReader();
+  return new Promise((resolve, reject) => {
+    fileReader.onerror = () => {
+      fileReader.abort();
+      reject(new DOMException("Problem parsing input file."));
+    };
+
+    fileReader.onload = () => {
+      resolve(fileReader.result);
+    };
+    fileReader.readAsText(file);
+  });
+}
+
+async function getPromiseFromTxt(file) {
+	try {
+		const fileContent = await readTxtFile(file);
+		// console.log(fileContent)
+		const result = parseTxtFile(file.name, fileContent);
+		return result;
+	} catch(e) {
+		console.log(e);
+	}
+}
+
 $('#file-input').change(function (event) {
 	const file = event.target.files[0];
 	if (!file) {
 		return;
 	}
-	const reader = new FileReader();
 	switch (getExtension(file.name)) {
 		case 'txt':
-			reader.readAsText(file, 'UTF-8');
-			reader.onload = function (event) {
-				signals.push(parseTxtFile(file.name, event));
-				createCharts(file.name, signals[signals.length - 1]);
-			}
+			signals.push(getPromiseFromTxt(file));
 	};
+	console.log(signals)
+	signals[signals.length - 1].then((signal) => {
+		createCharts(file.name, signal);
+	})
 })
 
 $(document).on('click', '.channel-btn', function () {
