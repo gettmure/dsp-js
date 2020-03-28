@@ -1,6 +1,6 @@
 import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
-import { createCharts, showCharts } from './chart_renderer.js'
+import { createCharts, renderChart } from './chart_renderer.js'
 
 let signals = [];
 
@@ -44,7 +44,6 @@ function readTxtFile(file) {
 async function getPromiseFromTxt(file) {
 	try {
 		const fileContent = await readTxtFile(file);
-		// console.log(fileContent)
 		const result = parseTxtFile(file.name, fileContent);
 		return result;
 	} catch(e) {
@@ -61,16 +60,21 @@ $('#file-input').change(function (event) {
 		case 'txt':
 			signals.push(getPromiseFromTxt(file));
 	};
-	console.log(signals)
 	signals[signals.length - 1].then((signal) => {
 		createCharts(file.name, signal);
 	})
 })
 
 $(document).on('click', '.channel-btn', function () {
-	showCharts(signals, this);
+	const clickedButton = this;
+	Promise.all(signals).then(values => {
+		renderChart(values, clickedButton);
+	})
 })
 
 $('#signals-info-menu').on('click', '.signal-info-btn', function () {
-	showSignalInfo(signals, this);
+	const clickedButton = this;
+	Promise.all(signals).then(values => {
+		showSignalInfo(values, clickedButton);
+	})
 })

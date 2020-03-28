@@ -3,7 +3,7 @@ const COLORS_COUNT = 16777215;
 let chartsCount = 0;
 let signalsCount = 0;
 
-export function showCharts(signals, element) {
+export function renderChart(signals, element) {
 	const signalId = $(element).parent().attr('id');
 	const chartId = element.id;
 	const signal = signals.find((signal) => {
