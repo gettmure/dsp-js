@@ -28,17 +28,17 @@ function getName(filename) {
 
 function readTxtFile(file) {
 	const fileReader = new FileReader();
-  return new Promise((resolve, reject) => {
-    fileReader.onerror = () => {
-      fileReader.abort();
-      reject(new DOMException("Problem parsing input file."));
-    };
+	return new Promise((resolve, reject) => {
+		fileReader.onerror = () => {
+			fileReader.abort();
+			reject(new DOMException("Problem parsing input file."));
+		};
 
-    fileReader.onload = () => {
-      resolve(fileReader.result);
-    };
-    fileReader.readAsText(file);
-  });
+		fileReader.onload = () => {
+			resolve(fileReader.result);
+		};
+		fileReader.readAsText(file);
+	});
 }
 
 async function getPromiseFromTxt(file) {
@@ -46,7 +46,7 @@ async function getPromiseFromTxt(file) {
 		const fileContent = await readTxtFile(file);
 		const result = parseTxtFile(file.name, fileContent);
 		return result;
-	} catch(e) {
+	} catch (e) {
 		console.log(e);
 	}
 }
@@ -78,3 +78,4 @@ $('#signals-info-menu').on('click', '.signal-info-btn', function () {
 		showSignalInfo(values, clickedButton);
 	})
 })
+

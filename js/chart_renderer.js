@@ -37,8 +37,9 @@ export function createCharts(fileName, signal) {
 		$('#signal-navigation-menu').css('display', 'block');
 	}
 	signal.channels.forEach((channel) => {
-		const chartData = getChartData(channel, signal.period, 1);
+		const chartData = getChartData(channel.values, signal.period, signal.recordingTime);
 		const chartId = `chart${chartsCount}`;
+		const [minimalPoint, maximalPoint] = getMinMax(channel.values);
 		$(`#${signalId}`).append(`<button class="dropdown-item channel-btn" type="button" id="${chartId}">${channel.name}</button>`);
 		let chartDemo = new CanvasJS.Chart(`${chartId}`, {
 			width: 200,
@@ -49,7 +50,9 @@ export function createCharts(fileName, signal) {
 			},
 			axisY: {
 				title: "",
-				valueFormatString: " "
+				valueFormatString: " ",
+				minimum: minimalPoint,
+				maximum: maximalPoint
 			},
 			axisX: {
 				title: "",
@@ -57,10 +60,11 @@ export function createCharts(fileName, signal) {
 			},
 			data: chartData,
 		})
+		console.log(chartDemo);
 		$('.channel-btn > div > .canvasjs-chart-canvas + .canvasjs-chart-canvas').css('position', '');
 		chartDemo.render();
 		$('article').append(`
-      <div class="chartContainer mb-2" id="${chartId}-container">
+	  <div class="chartContainer mb-2" id="${chartId}-container">
       </div>
     `);
 		channel.chart =
@@ -71,11 +75,33 @@ export function createCharts(fileName, signal) {
 				animationEnabled: false,
 				zoomEnabled: true,
 				zoomType: "x",
+				rangeChanging: (e) => {
+					const id = `#${chartId}-slider`;
+					const trigger = e.trigger;
+					$(function () {
+						if (trigger == 'reset') {
+							$(id).slider('destroy');
+						}
+						if (trigger == 'zoom') {
+							$(id).slider({
+								min: signal.recordingTime,
+								max: signal.endTime,
+								value: e.axisX[0].viewportMinimum,
+								slide: function (event, ui) {
+									console.log(ui.value)
+								}
+							});
+							$(id).slider('enable');
+						}
+					});
+				},
 				title: {
 					text: channel.name,
 				},
 				axisY: {
 					includeZero: true,
+					minimum: minimalPoint,
+					maximum: maximalPoint
 				},
 				axisX: {
 					includeZero: true,
@@ -85,6 +111,7 @@ export function createCharts(fileName, signal) {
 			id: chartId
 		}
 		chartsCount++;
+		$(`#${chartId}-container`).append(`<div class="slider" id="${chartId}-slider"></div>`);
 	});
 	$('#signals-info-menu').append(`
     <button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${signalId}-info">
@@ -94,14 +121,14 @@ export function createCharts(fileName, signal) {
 	signalsCount++;
 }
 
-function getChartData(channel, period) {
+function getChartData(channelData, period, startTime) {
 	let data = [];
 	let dataPoints = [];
-	let step = 0;
-	for (let i = 0; i < channel.values.length; i += 1) {
+	let step = startTime;
+	for (let i = 0; i < channelData.length; i += 1) {
 		dataPoints.push({
-			x: step,
-			y: channel.values[i],
+			x: new Date(step),
+			y: channelData[i],
 		});
 		step += period;
 	}
@@ -113,4 +140,13 @@ function getChartData(channel, period) {
 
 function getRandomColor() {
 	return `#${Math.floor(Math.random() * COLORS_COUNT).toString(16)}`;
+}
+
+function getMinMax(array) {
+	let min = array[0], max = array[0];
+	for (let i = 1; i < array.length; i++) {
+		min = (array[i] < min) ? array[i] : min;
+		max = (array[i] > max) ? array[i] : max;
+	}
+	return [min, max];
 }

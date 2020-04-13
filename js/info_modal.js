@@ -12,10 +12,11 @@ export function showSignalInfo(signals, element) {
 	const channelsCount = restoredSignal.channelsCount;
 	const pointsCount = restoredSignal.measuresCount;
 	const frequency = restoredSignal.frequency;
-	const period = 1 / frequency;
+	const period = restoredSignal.period;
 	const recordedAt = restoredSignal.recordingTime;
+	const endTime = restoredSignal.endTime;
 	const startDate = new Date(recordedAt);
-	const endDate = new Date(recordedAt + pointsCount * period);
+	const endDate = new Date(endTime);
 	const duration = getDatesDifference(endDate.getTime() - startDate.getTime());
 	$('.modal-title').text(`Информация о сигнале ${name}`);
 	$('.modal-body').html(`
