@@ -4,7 +4,7 @@ export class Signal {
 		this.channelsCount = channelsCount;
 		this.measuresCount = measuresCount;
 		this.frequency = frequency;
-		this.period = 1 / frequency;
+		this.period = 1 / frequency * 1000;
 		this.recordingTime = start;
 		this.endTime = this.recordingTime + this.measuresCount * this.period;
 		this.channels = [];

@@ -31,8 +31,7 @@ export function createCharts(fileName, signal) {
       	<div class="dropdown-menu channels-menu" id="${signalId}">
         </div>
       </div>
-    </li>
-  `);
+    </li>`);
 	if ($('#signal-navigation-menu').css('display') == 'none') {
 		$('#signal-navigation-menu').css('display', 'block');
 	}
@@ -62,10 +61,7 @@ export function createCharts(fileName, signal) {
 		})
 		$('.channel-btn > div > .canvasjs-chart-canvas + .canvasjs-chart-canvas').css('position', '');
 		chartDemo.render();
-		$('article').append(`
-	  <div class="chartContainer mb-2" id="${chartId}-container">
-      </div>
-	`);
+		$('article').append(`<div class="chartContainer mb-2" id="${chartId}-container"></div>`);
 		channel.chart =
 		{
 			plot: new CanvasJS.Chart(`${chartId}-container`, {
@@ -75,8 +71,7 @@ export function createCharts(fileName, signal) {
 				zoomEnabled: true,
 				zoomType: "x",
 				rangeChanged: (e) => {
-					const chart = e;
-					scrollHandler(chart, signal.id, signal.channels, chartId, signal.recordingTime, signal.endTime, channel.chart);
+					scrollHandler(e, signal.id, signal.channels, signal.recordingTime, signal.endTime, channel.chart);
 					if (e.trigger == 'zoom' || e.trigger == 'reset') {
 						syncHandler(e, signal.channels);
 					}
@@ -99,20 +94,11 @@ export function createCharts(fileName, signal) {
 		chartsCount++;
 		$(`#${chartId}-container`).append(`<div class="${signal.id}-slider" id="${chartId}-slider"></div>`);
 	});
-	$('#signals-info-menu').append(`
-    <button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${signalId}-info">
-			${signal.name}
-    </button>
-  `);
+	$('#signals-info-menu').append(`<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${signalId}-info">${signal.name}</button>`);
 	signalsCount++;
 }
 
-$('.ui-slider-handle').mousedown(() => {
-	console.log(1)
-})
-
-function scrollHandler(e, signalId, channels, chartId, recordingTime, endTime, chart) {
-	const idSelector = `#${chartId}-slider`;
+function scrollHandler(e, signalId, channels, recordingTime, endTime, chart) {
 	let axisX = chart.plot.axisX[0]
 	const classSelector = `.${signalId}-slider`;
 	const trigger = e.trigger;
@@ -131,7 +117,7 @@ function scrollHandler(e, signalId, channels, chartId, recordingTime, endTime, c
 				min: recordingTime,
 				max: endTime,
 				value: sliderValue,
-				start: function(e, ui) {
+				start: function (e, ui) {
 					const scrollId = this.id.split('-')[0];
 					const plot = channels.find((channel) => {
 						return channel.chart.id == scrollId;
