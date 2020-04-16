@@ -117,14 +117,16 @@ function scrollHandler(e, signalId, channels, recordingTime, endTime, axisX) {
 				slide: function (e, ui) {
 					const start = ui.value;
 					const end = start + diff;
-					channels.forEach((channel) => {
-						const currentAsixX = channel.chart.plot.axisX[0];
-						currentAsixX.set('viewportMinimum', start)
-						currentAsixX.set('viewportMaximum', end);
-					})
-					$(classSelector).each(function () {
-						$(this).slider('option', 'value', start);
-					})
+					if (end <= endTime) {
+						channels.forEach((channel) => {
+							const currentAsixX = channel.chart.plot.axisX[0];
+							currentAsixX.set('viewportMinimum', start, false)
+							currentAsixX.set('viewportMaximum', end);
+						})
+						$(classSelector).each(function () {
+							$(this).slider('option', 'value', start);
+						})
+					} else return;
 				}
 			});
 		}
