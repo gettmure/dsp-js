@@ -70,11 +70,11 @@ export function createCharts(fileName, signal) {
 				animationEnabled: false,
 				zoomEnabled: true,
 				zoomType: "x",
+				rangeChanging: (e) => {
+					scrollHandler(e, signal.id, signal.channels, signal.recordingTime, signal.endTime, channel.chart.plot.axisX[0]);
+				},
 				rangeChanged: (e) => {
-					scrollHandler(e, signal.id, signal.channels, signal.recordingTime, signal.endTime, channel.chart);
-					if (e.trigger == 'zoom' || e.trigger == 'reset') {
-						syncHandler(e, signal.channels);
-					}
+					syncHandler(e, signal.channels);
 				},
 				title: {
 					text: channel.name,
@@ -98,38 +98,33 @@ export function createCharts(fileName, signal) {
 	signalsCount++;
 }
 
-function scrollHandler(e, signalId, channels, recordingTime, endTime, chart) {
-	let axisX = chart.plot.axisX[0]
+function scrollHandler(e, signalId, channels, recordingTime, endTime, axisX) {
 	const classSelector = `.${signalId}-slider`;
 	const trigger = e.trigger;
 	const sliderValue = e.axisX[0].viewportMinimum;
-	let validChart;
+	const diff = axisX.get('viewportMaximum') - axisX.get('viewportMinimum');
 	$(function () {
 		if (trigger == 'reset') {
 			if ($(classSelector).slider()) {
 				$(classSelector).slider('destroy');
 			}
-			axisX.set('viewportMinimum', null);
-			axisX.set('viewportMaximum', null);
 		}
-		if (trigger == 'zoom') {
-			$(classSelector, $(this)).slider({
+		if (trigger == 'zoom' || trigger == 'pan') {
+			$(classSelector).slider({
 				min: recordingTime,
 				max: endTime,
 				value: sliderValue,
-				start: function (e, ui) {
-					const scrollId = this.id.split('-')[0];
-					const plot = channels.find((channel) => {
-						return channel.chart.id == scrollId;
-					})
-					validChart = plot.chart;
-				},
 				slide: function (e, ui) {
-					const dif = axisX.get('viewportMaximum') - axisX.get('viewportMinimum');
 					const start = ui.value;
-					const end = start + dif;
-					validChart.plot.axisX[0].set('viewportMinimum', start)
-					validChart.plot.axisX[0].set('viewportMaximum', end);
+					const end = start + diff;
+					channels.forEach((channel) => {
+						const currentAsixX = channel.chart.plot.axisX[0];
+						currentAsixX.set('viewportMinimum', start)
+						currentAsixX.set('viewportMaximum', end);
+					})
+					$(classSelector).each(function () {
+						$(this).slider('option', 'value', start);
+					})
 				}
 			});
 		}
