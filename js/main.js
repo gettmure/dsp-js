@@ -42,7 +42,7 @@ function readTxtFile(file) {
 	});
 }
 
-async function getPromiseFromTxt(file) {
+async function getDataFromTxt(file) {
 	try {
 		const fileContent = await readTxtFile(file);
 		const result = parseTxtFile(file.name, fileContent);
@@ -59,7 +59,7 @@ $('#file-input').change(async function (event) {
 	}
 	switch (getExtension(file.name)) {
 		case 'txt':
-			const data = await getPromiseFromTxt(file);
+			const data = await getDataFromTxt(file);
 			signals.push(data);
 	};
 	createCharts(file.name, signals[signals.length - 1]);
