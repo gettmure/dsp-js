@@ -73,8 +73,7 @@ function getDatesDifference(unixtime) {
 	const seconds = Math.floor(unixtime / MILLISECONDS_PER_SECOND);
 	unixtime -= seconds * MILLISECONDS_PER_SECOND;
 
-	let milliseconds;
-	unixtime == 0 ? milliseconds = 0 : milliseconds = unixtime;
+	let milliseconds = unixtime;
 
 	return `${days} дней ${hours} часов ${minutes} минут ${seconds} секунд ${milliseconds} миллисекунд`;
 }
