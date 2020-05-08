@@ -74,4 +74,5 @@ article {
     width: 10rem;
     float: right;
     transition: 0.7s;
+    z-index: 999;
 }
