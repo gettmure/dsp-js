@@ -3,18 +3,14 @@ const MILLISECONDS_PER_HOUR = 3600000;
 const MILLISECONDS_PER_MINUTE = 60000;
 const MILLISECONDS_PER_SECOND = 1000;
 
-export function showSignalInfo(signals, element) {
-	const restoredId = getValidSignalId(element.id);
-	const restoredSignal = signals.find((signal) => {
-		return restoredId == signal.id;
-	});
-	const name = restoredSignal.name;
-	const channelsCount = restoredSignal.channelsCount;
-	const pointsCount = restoredSignal.measuresCount;
-	const frequency = restoredSignal.frequency;
-	const period = restoredSignal.period;
-	const recordedAt = restoredSignal.recordingTime;
-	const endTime = restoredSignal.endTime;
+export function showSignalInfo(signal) {
+	const name = signal.name;
+	const channelsCount = signal.channelsCount;
+	const pointsCount = signal.measuresCount;
+	const frequency = signal.frequency;
+	const period = signal.period;
+	const recordedAt = signal.recordingTime;
+	const endTime = signal.endTime;
 	const startDate = new Date(recordedAt);
 	const endDate = new Date(endTime);
 	const duration = getDatesDifference(endDate.getTime() - startDate.getTime());
@@ -46,7 +42,7 @@ export function showSignalInfo(signals, element) {
       </tbody>
     </table>
     `);
-	restoredSignal.channels.forEach((channel, index) => {
+	signal.channels.forEach((channel, index) => {
 		$('#channels-table').append(`
     	<tr>
       	<th scope="row">
@@ -56,7 +52,7 @@ export function showSignalInfo(signals, element) {
         	${channel.name}
       	</td>
       	<td>
-        	${restoredSignal.name}
+        	${signal.name}
       	</td>
     	</tr>
   	`);
@@ -64,21 +60,21 @@ export function showSignalInfo(signals, element) {
 	$('#signal-info-modal').modal();
 }
 
-function getValidSignalId(id) {
-	let parts = id.split('-');
-	return parts[0];
-}
-
 function getDatesDifference(unixtime) {
 	const days = Math.floor(unixtime / MILLISECONDS_PER_DAY);
 	unixtime -= days * MILLISECONDS_PER_DAY;
+
 	const hours = Math.floor(unixtime / MILLISECONDS_PER_HOUR);
 	unixtime -= hours * MILLISECONDS_PER_HOUR;
+
 	const minutes = Math.floor(unixtime / MILLISECONDS_PER_MINUTE);
 	unixtime -= minutes * MILLISECONDS_PER_MINUTE;
+
 	const seconds = Math.floor(unixtime / MILLISECONDS_PER_SECOND);
 	unixtime -= seconds * MILLISECONDS_PER_SECOND;
-	const milliseconds = unixtime - seconds;
+
+	let milliseconds;
+	unixtime == 0 ? milliseconds = 0 : milliseconds = unixtime - seconds;
 
 	return `${days} дней ${hours} часов ${minutes} минут ${seconds} секунд ${milliseconds} миллисекунд`;
 }

@@ -52,24 +52,23 @@ async function getPromiseFromTxt(file) {
 	}
 }
 
-$('#file-input').change(function (event) {
+$('#file-input').change(async function (event) {
 	const file = event.target.files[0];
 	if (!file) {
 		return;
 	}
 	switch (getExtension(file.name)) {
 		case 'txt':
-			signals.push(getPromiseFromTxt(file));
+			const data = await getPromiseFromTxt(file);
+			signals.push(data);
 	};
-	signals[signals.length - 1].then((signal) => {
-		createCharts(file.name, signal);
-	})
+	createCharts(file.name, signals[signals.length - 1]);
 })
 
 $(document).on('click', '.channel-btn', function () {
 	const clickedButton = this;
-	Promise.all(signals).then(values => {
-		renderChart(values, clickedButton);
+	signals.forEach((signal) => {
+		renderChart(signal, clickedButton);
 	})
 })
 
@@ -85,9 +84,8 @@ $('#show-signal-navigation-menu-btn').click(function () {
 })
 
 $('#signals-info-menu').on('click', '.signal-info-btn', function () {
-	const clickedButton = this;
-	Promise.all(signals).then(values => {
-		showSignalInfo(values, clickedButton);
+	signals.forEach((signal) => {
+		showSignalInfo(signal);
 	})
 })
 
