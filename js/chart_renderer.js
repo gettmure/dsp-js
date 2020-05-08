@@ -2,6 +2,7 @@ const COLORS_COUNT = 16777215;
 
 let chartsCount = 0;
 let signalsCount = 0;
+let dataSeriesArray = {};
 
 export function renderChart(signals, element) {
 	const signalId = $(element).parent().attr('id');
@@ -38,6 +39,7 @@ export function createCharts(fileName, signal) {
 	signal.channels.forEach((channel) => {
 		const chartData = getChartData(channel.values, signal.period, signal.recordingTime);
 		const chartId = `chart${chartsCount}`;
+		dataSeriesArray[chartId] = chartData[0].dataPoints;
 		const [minimalPoint, maximalPoint] = getMinMax(channel.values);
 		$(`#${signalId}`).append(`<button class="dropdown-item channel-btn" type="button" id="${chartId}">${channel.name}</button>`);
 		let chartDemo = new CanvasJS.Chart(`${chartId}`, {
@@ -69,9 +71,11 @@ export function createCharts(fileName, signal) {
 				height: 325,
 				animationEnabled: false,
 				zoomEnabled: true,
-				zoomType: "x",
+				zoomType: 'x',
 				rangeChanging: (e) => {
-					scrollHandler(e, signal.id, signal.channels, signal.recordingTime, signal.endTime, channel.chart.plot.axisX[0]);
+					const axisX = channel.chart.plot.axisX[0];
+					const range = axisX.get('viewportMaximum') - axisX.get('viewportMinimum');
+					scrollHandler(e, signal.id, signal.channels, signal.recordingTime, signal.endTime, range);
 				},
 				rangeChanged: (e) => {
 					syncHandler(e, signal.channels);
@@ -92,17 +96,16 @@ export function createCharts(fileName, signal) {
 			id: chartId
 		}
 		chartsCount++;
-		$(`#${chartId}-container`).append(`<div class="${signal.id}-slider" id="${chartId}-slider"></div>`);
+		$(`#${chartId}-container > .canvasjs-chart-container`).after(`<div class="${signal.id}-slider" id="${chartId}-slider"></div>`);
 	});
 	$('#signals-info-menu').append(`<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${signalId}-info">${signal.name}</button>`);
 	signalsCount++;
 }
 
-function scrollHandler(e, signalId, channels, recordingTime, endTime, axisX) {
+function scrollHandler(e, signalId, channels, recordingTime, endTime, range) {
 	const classSelector = `.${signalId}-slider`;
 	const trigger = e.trigger;
-	const sliderValue = e.axisX[0].viewportMinimum;
-	const diff = axisX.get('viewportMaximum') - axisX.get('viewportMinimum');
+	const currentLeftValue = e.axisX[0].viewportMinimum;
 	$(function () {
 		if (trigger == 'reset') {
 			if ($(classSelector).slider()) {
@@ -112,23 +115,24 @@ function scrollHandler(e, signalId, channels, recordingTime, endTime, axisX) {
 		if (trigger == 'zoom' || trigger == 'pan') {
 			$(classSelector).slider({
 				min: recordingTime,
-				max: endTime,
-				value: sliderValue,
+				max: endTime - range,
+				value: currentLeftValue,
 				slide: function (e, ui) {
-					const start = ui.value;
-					const end = start + diff;
-					if (end <= endTime) {
-						channels.forEach((channel) => {
-							const currentAsixX = channel.chart.plot.axisX[0];
-							currentAsixX.set('viewportMinimum', start, false)
-							currentAsixX.set('viewportMaximum', end);
-						})
-						$(classSelector).each(function () {
-							$(this).slider('option', 'value', start);
-						})
-					} else return;
+					const leftLimit = ui.value;
+					const rightLimit = leftLimit + range;
+					if (rightLimit > endTime) {
+						return;
+					};
+					channels.forEach((channel) => {
+						const currentAsixX = channel.chart.plot.axisX[0];
+						currentAsixX.set('viewportMinimum', leftLimit, false)
+						currentAsixX.set('viewportMaximum', rightLimit);
+					})
+					$(classSelector).each(function () {
+						$(this).slider('option', 'value', leftLimit);
+					})
 				}
-			});
+			})
 		}
 	});
 }

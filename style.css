@@ -38,3 +38,7 @@ article {
     border: 2px solid black;
     padding: 52px;
 }
+
+.canvasjs-chart-container > canvas + canvas {
+    position: inherit !important;
+}
