@@ -4,8 +4,7 @@ let chartsCount = 0;
 let signalsCount = 0;
 let dataSeriesArray = {};
 
-export function renderChart(signal, element) {
-	const chartId = element.id;
+export function renderChart(signal, chartId) {
 	const chart = signal.channels.find((channel) => {
 		return chartId == channel.chart.id;
 	}).chart;

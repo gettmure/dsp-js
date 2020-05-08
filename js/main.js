@@ -67,9 +67,11 @@ $('#file-input').change(async function (event) {
 
 $(document).on('click', '.channel-btn', function () {
 	const clickedButton = this;
-	signals.forEach((signal) => {
-		renderChart(signal, clickedButton);
-	})
+	const signalId = $(clickedButton).parent().attr('id');
+	const signal = signals.find((signal) => {
+		return signal.id == signalId;
+	});
+	renderChart(signal, clickedButton.id);
 })
 
 $('#show-signal-navigation-menu-btn').click(function () {
