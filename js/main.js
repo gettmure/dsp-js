@@ -3,6 +3,7 @@ import { parseTxtFile } from './parser.js';
 import { createCharts, renderChart } from './chart_renderer.js'
 
 let signals = [];
+let isOpened = false;
 
 $('#open-file-btn').click(function () {
 	document.getElementById('file-input').click();
@@ -70,6 +71,17 @@ $(document).on('click', '.channel-btn', function () {
 	Promise.all(signals).then(values => {
 		renderChart(values, clickedButton);
 	})
+})
+
+$('#show-signal-navigation-menu-btn').click(function () {
+	if (!isOpened) {
+		$('.signal-navigation-menu-container').css('right', '0');
+		$('#show-signal-navigation-menu-btn').html('&#62');
+	} else {
+		$('.signal-navigation-menu-container').css('right', '-10rem');
+		$('#show-signal-navigation-menu-btn').html('&#60');
+	}
+	isOpened = !isOpened;
 })
 
 $('#signals-info-menu').on('click', '.signal-info-btn', function () {

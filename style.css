@@ -4,20 +4,22 @@
 }
 
 #signal-navigation-menu {
+    border-radius: 0px !important;
     padding: 0%;
-    display: none;
+    display: block;
     transition: 1s;
-    top: 70px;
-    position: fixed;
-    width: 200px;
-    right: 0px;
-    z-index: 999;
+    width: 100%;
+    overflow-y: auto;
+}
+
+.signal > div {
+    width: 100%;
 }
 
 .signal > div > button {
-    margin-bottom: 5px;
+    margin: 10px;
     word-wrap: normal;
-    white-space: normal;
+    white-space: normal;    
     font-size: 15px !important;
 }
 
@@ -41,4 +43,35 @@ article {
 
 .canvasjs-chart-container > canvas + canvas {
     position: inherit !important;
+}
+
+#show-signal-navigation-menu-btn {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.5rem;
+    height: 2.5rem;
+    left: -1.5rem;
+    top: 45%;      
+    border: 1px solid black;
+    border-radius: 10px 0px 0px 10px;
+    background-color: rgb(233, 234, 235);
+    color: rgb(143, 143, 143);
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.signal-navigation-menu-container {
+    display: none;
+    justify-content: center;
+    top: 0px;
+    right: -10rem;
+    position: fixed;
+    background-color: lightsteelblue;
+    border: 1px solid black;
+    height: 100%;
+    width: 10rem;
+    float: right;
+    transition: 0.7s;
 }
