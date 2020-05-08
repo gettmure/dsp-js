@@ -74,7 +74,7 @@ function getDatesDifference(unixtime) {
 	unixtime -= seconds * MILLISECONDS_PER_SECOND;
 
 	let milliseconds;
-	unixtime == 0 ? milliseconds = 0 : milliseconds = unixtime - seconds;
+	unixtime == 0 ? milliseconds = 0 : milliseconds = unixtime;
 
 	return `${days} дней ${hours} часов ${minutes} минут ${seconds} секунд ${milliseconds} миллисекунд`;
 }
