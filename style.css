@@ -23,8 +23,17 @@
     font-size: 15px !important;
 }
 
+.signal-btn {
+    transition: 0.5s;
+}
+
 .channels-menu {
+    display: flex;
+    transition: 0.5s;
     width: fit-content !important;
+    display: none;
+    justify-content: center;
+    flex-direction: column;
 }
 
 article {
@@ -66,13 +75,23 @@ article {
     display: none;
     justify-content: center;
     top: 0px;
-    right: -10rem;
+    right: -15rem;
     position: fixed;
     background-color: lightsteelblue;
     border: 1px solid black;
     height: 100%;
-    width: 10rem;
+    width: 15rem;
     float: right;
     transition: 0.7s;
     z-index: 999;
+}
+
+#return-btn {
+    display: none;
+    width: 70%;
+}
+
+.channel-btn > .canvasjs-chart-container {
+    display: flex;
+    justify-content: center;
 }

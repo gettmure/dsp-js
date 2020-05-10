@@ -19,17 +19,17 @@ export function createCharts(fileName, signal) {
 	let signalId = `signal${signalsCount}`;
 	signal.id = signalId;
 	$('#signal-navigation-menu').append(`
-  	<li class="d-flex justify-content-center signal"> 
-      <div class="btn-group dropleft">
-    	  <button type="button" class="container-fluid btn btn-info" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      	  ${fileName}
-        </button>
-      	<div class="dropdown-menu channels-menu" id="${signalId}">
-        </div>
-      </div>
-    </li>`);
+		<li class="d-flex justify-content-center signal"> 
+	  	<div class="btn-group">
+		  	<button type="button" class="signal-btn container-fluid btn btn-info" id="${signalId}-btn aria-haspopup="true" aria-expanded="false">
+	  	  	${fileName}
+	    	</button>
+	  	</div>
+		</li>
+	`);
+	$('.signal-navigation-menu-container').append(`<div class="channels-menu justify-content-around" id="${signalId}"></div>`);
 	if ($('.signal-navigation-menu-container').css('display') == 'none') {
-		$('.signal-navigation-menu-container').css('display', 'flex');
+		$('.signal-navigation-menu-container').css('display', 'block');
 	}
 	signal.channels.forEach((channel) => {
 		const chartData = getChartData(channel.values, signal.period, signal.recordingTime);

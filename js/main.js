@@ -79,7 +79,7 @@ $('#show-signal-navigation-menu-btn').click(function () {
 		$('.signal-navigation-menu-container').css('right', '0');
 		$('#show-signal-navigation-menu-btn').html('&#62');
 	} else {
-		$('.signal-navigation-menu-container').css('right', '-10rem');
+		$('.signal-navigation-menu-container').css('right', '-15rem');
 		$('#show-signal-navigation-menu-btn').html('&#60');
 	}
 	isOpened = !isOpened;
@@ -89,5 +89,26 @@ $('#signals-info-menu').on('click', '.signal-info-btn', function () {
 	signals.forEach((signal) => {
 		showSignalInfo(signal);
 	})
+})
+
+$(document).on('click', '.signal-btn', function () {
+	const menuId = $(this).attr('id').split('-')[0];
+	const menuSelector = `.channels-menu[id='${menuId}']`;
+	$('#signal-navigation-menu').css('display', 'none');
+	$(menuSelector).css('display', 'flex');
+	$('#return-btn').css('display', 'block')
+})
+
+$(document).on('click', '.channel-btn', function () {
+	$('#show-signal-navigation-menu-btn').html('&#60');
+	$('.signal-navigation-menu-container').css('right', '-15rem');
+	$('#signal-navigation-menu').css('display', 'block');
+	$('.channels-menu').css('display', 'none');
+})
+
+$(document).on('click', '#return-btn', function () {
+	$('.channels-menu').css('display', 'none');
+	$('#signal-navigation-menu').css('display', 'block');
+	$('#return-btn').css('display', 'none');
 })
 
