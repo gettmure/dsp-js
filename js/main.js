@@ -132,10 +132,6 @@ $(document).on('click', '#return-btn', function () {
 	$('#return-btn').css('display', 'none');
 })
 
-$(document).on('click', '#determ-modelling-btn', function () {
-
-})
-
 $(document).on('change', '#model-type', function () {
 	const type = $(this).val();
 	const parametersContainer = $('#parameters-container');
@@ -145,17 +141,17 @@ $(document).on('change', '#model-type', function () {
 	switch (type) {
 		case 'Delayed single impulse': {
 			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="delay" placeholder="Задержка импульса">';
-			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Delayed single bounce': {
 			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="delay" placeholder="Задержка скачка">';
-			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Decreasing discretized exponent': {
 			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="base" placeholder="Основание степени a^n">';
-			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Discretized sinusoid': {
@@ -163,15 +159,18 @@ $(document).on('change', '#model-type', function () {
 				<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
 				<div class="form-group"><input class="parameter form-control" id="circular-frequency" placeholder="Круговая частота"></div>
 				<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза"></div>`;
-			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Meander':
 		case 'Saw': {
 			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="period" placeholder="Период">';
-			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
+	}
+	if (signals.length == 0) {
+		PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + PARAMETERS_HTML;
 	}
 	parametersContainer.html(PARAMETERS_HTML);
 })
