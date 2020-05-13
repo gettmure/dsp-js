@@ -44,10 +44,10 @@ export class Signal {
 			$('.signal-navigation-menu-container').css('display', 'block');
 		}
 
-		$('#signal-navigation-menu').append(SIGNAL_BUTTON_HTML);
 		$('.signal-navigation-menu-container').append(CHANNELS_MENU_HTML);
-		$('#signal-choice').append(`<option class="signal-item" value="${this.id}">${this.name}</option>`)
+		$('#signal-navigation-menu').append(SIGNAL_BUTTON_HTML);
 		$('#signals-info-menu').append(SIGNAL_INFO_BUTTON_HTML);
+		$('#signal-choice').append(`<option class="signal-item" value="${this.id}">${this.name}</option>`)
 
 		this.#renderCharts();
 	}

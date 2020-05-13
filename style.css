@@ -28,12 +28,11 @@
 }
 
 .channels-menu {
-    display: flex;
     transition: 0.5s;
-    width: fit-content !important;
     display: none;
     justify-content: center;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 article {
@@ -50,8 +49,12 @@ article {
     padding: 52px;
 }
 
-.canvasjs-chart-container > canvas + canvas {
+.canvasjs-chart-container > .canvasjs-chart-canvas + .canvasjs-chart-canvas {
     position: inherit !important;
+}
+
+.canvasjs-chart-credit {
+    display: none;
 }
 
 #show-signal-navigation-menu-btn {

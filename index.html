@@ -1,159 +1,209 @@
 <html lang="ru">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-    <link href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css' rel='stylesheet'
-        type='text/css'>
-    <title>DSP-сцт(1)-Myshalov-Rodion</title>
+	<link href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css' rel='stylesheet'
+		type='text/css'>
+	<title>DSP-сцт(1)-Myshalov-Rodion</title>
 </head>
 
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-info mb-2">
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <div class="d-flex container-fluid justify-content-around navbar-nav mr-auto">
-                    <div class="nav-item active">
-                        <div class="dropdown">
-                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Файл
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <button class="dropdown-item" id="open-file-btn">
-                                    <input id="file-input" accept=".txt" type="file" style="display: none;" />Открыть
-                                </button>
-                                <button class="btn dropdown-item" href="#"
-                                    style="white-space:normal;">Сохранить</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="nav-item active">
-                        <div class="dropdown">
-                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Моделирование
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Детерминированных
-                                    сигналов</button>
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Случайных
-                                    сигналов</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="nav-item active">
-                        <div class="dropdown">
-                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Фильтрация
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Удаление
-                                    артефактов</button>
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Выделение
-                                    полиномиальных трендов</button>
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Линейную
-                                    фильтрацию сигналов с заданной конечной импульсной характеристикой</button>
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Линейную
-                                    фильтрацию сигналов с заданной частотной характеристикой</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="nav-item active">
-                        <div class="dropdown">
-                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Анализ
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <button class="btn dropdown-item" href="#"
-                                    style="white-space:normal;">Частотный</button>
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
-                                    корреляционный произвольных пар сигналов</button>
-                                <button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
-                                    спектральный произвольных пар сигналов</button>
-                                <button class="btn dropdown-item" href="#"
-                                    style="white-space:normal;">Частотно-временной анализ сигналов с использованием
-                                    Фурье-спектрограмм</button>
-                                <button class="btn dropdown-item" href="#"
-                                    style="white-space:normal;">Вейвлетограммы</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="nav-item active">
-                        <div class="dropdown">
-                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Сигналы
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" id="signals-info-menu">
+	<header>
+		<nav class="navbar navbar-expand-lg navbar-light bg-info mb-2">
+			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+				<div class="d-flex container-fluid justify-content-around navbar-nav mr-auto">
+					<div class="nav-item active">
+						<div class="dropdown">
+							<a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Файл
+							</a>
+							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+								<button class="dropdown-item" id="open-file-btn">
+									<input id="file-input" accept=".txt" type="file" style="display: none;" />Открыть
+								</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Сохранить</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav-item active">
+						<div class="dropdown">
+							<a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Моделирование
+							</a>
+							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#determ-modelling-modal">
+									Детерминированный сигнал
+								</button>
 
-                            </div>
-                        </div>
-                    </div>
-                    <div class="nav-item active">
-                        <div class="dropdown">
-                            <a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Справка
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item" href="#" id="about-btn">О программе</a>
-                                <a class="dropdown-item" href="#" id="author-btn">Автор</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </header>
+								<button class="btn dropdown-item" href="#" style="white-space:normal; word-wrap: normal">Случайных
+									сигналов</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav-item active">
+						<div class="dropdown">
+							<a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Фильтрация
+							</a>
+							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Удаление
+									артефактов</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Выделение
+									полиномиальных трендов</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Линейную
+									фильтрацию сигналов с заданной конечной импульсной характеристикой</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Линейную
+									фильтрацию сигналов с заданной частотной характеристикой</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav-item active">
+						<div class="dropdown">
+							<a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Анализ
+							</a>
+							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Частотный</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
+									корреляционный произвольных пар сигналов</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
+									спектральный произвольных пар сигналов</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Частотно-временной анализ
+									сигналов с использованием
+									Фурье-спектрограмм</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Вейвлетограммы</button>
+							</div>
+						</div>
+					</div>
+					<div class="nav-item active">
+						<div class="dropdown">
+							<a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Сигналы
+							</a>
+							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink" id="signals-info-menu">
 
-    <div class="signal-navigation-menu-container">
-        <div id="show-signal-navigation-menu-btn"> &#60 </div>
-        <ul id="signal-navigation-menu">
-        </ul>
-        <button type="button" class="container-fluid btn btn-info" id="return-btn" aria-haspopup="true"
-            aria-expanded="false">
-            Вернуться в меню сигналов
-        </button>
-    </div>
+							</div>
+						</div>
+					</div>
+					<div class="nav-item active">
+						<div class="dropdown">
+							<a class="btn btn-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Справка
+							</a>
+							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+								<a class="dropdown-item" href="#" id="about-btn">О программе</a>
+								<a class="dropdown-item" href="#" id="author-btn">Автор</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+	</header>
 
-    <article class="d-flex justify-content-around containet-fluid">
-        <div class="modal fade" id="signal-info-modal" tabindex="-1" role="dialog"
-            aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalScrollableTitle"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
+	<div class="signal-navigation-menu-container">
+		<div id="show-signal-navigation-menu-btn"> &#60 </div>
+		<ul id="signal-navigation-menu">
+		</ul>
+		<button type="button" class="container-fluid btn btn-info" id="return-btn" aria-haspopup="true"
+			aria-expanded="false">
+			Вернуться в меню сигналов
+		</button>
+	</div>
+	<div class="modal fade" id="determ-modelling-modal" tabindex="-1" role="dialog"
+		aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalCenterTitle">
+						Моделирование детерминированных сигналов
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="modelling-form">
+					<div class="modal-body">
+						<div id="options-container">
+							<div class="form-group">
+								<label for="signal-choice">Выберите сигнал</label>
+								<select class="form-control" id="signal-choice">
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="model-type">Выберите модель сигнала</label>
+								<select class="form-control" id="model-type">
+									<option value="Delayed single impulse">Задержанный единичный импульс</option>
+									<option value="Delayed single bounce">Задержанный единичный скачок</option>
+									<option value="Decreasing discretized exponent">Дискретизированная убывающая
+										экспонента
+									</option>
+									<option value="Discretized sinusoid">Дискретизированная синусоида</option>
+									<option value="Meander">"Меандр" (прямоугольная решетка)</option>
+									<option value="Saw">“Пила"</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="parameters-container">Укажите параметры</label>
+								<div id="parameters-container">
+									<input class="form-control" id="delay" placeholder="Задержка импульса">
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">
+							Закрыть
+						</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="create-model-btn">Применить</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </article>
-    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-        crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-    <script type="module" src="js/main.js"></script>
+	<article class="d-flex justify-content-around containet-fluid">
+		<div class="modal fade" id="signal-info-modal" tabindex="-1" role="dialog"
+			aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-scrollable" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalScrollableTitle"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</article>
+	<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+		integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+		crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+		integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+		crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+	<script type="module" src="js/main.js"></script>
 </body>
 
 </html>
