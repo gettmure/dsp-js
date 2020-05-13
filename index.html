@@ -38,7 +38,8 @@
 								Моделирование
 							</a>
 							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#determ-modelling-modal">
+								<button type="button" id="determ-modelling-btn" class="btn btn-primary" data-toggle="modal"
+									data-target="#determ-modelling-modal">
 									Детерминированный сигнал
 								</button>
 
@@ -121,6 +122,7 @@
 			Вернуться в меню сигналов
 		</button>
 	</div>
+
 	<div class="modal fade" id="determ-modelling-modal" tabindex="-1" role="dialog"
 		aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered" role="document">
@@ -137,11 +139,6 @@
 					<div class="modal-body">
 						<div id="options-container">
 							<div class="form-group">
-								<label for="signal-choice">Выберите сигнал</label>
-								<select class="form-control" id="signal-choice">
-								</select>
-							</div>
-							<div class="form-group">
 								<label for="model-type">Выберите модель сигнала</label>
 								<select class="form-control" id="model-type">
 									<option value="Delayed single impulse">Задержанный единичный импульс</option>
@@ -157,7 +154,15 @@
 							<div class="form-group">
 								<label for="parameters-container">Укажите параметры</label>
 								<div id="parameters-container">
-									<input class="form-control" id="delay" placeholder="Задержка импульса">
+									<div class="form-group">
+										<input class="parameter form-control" id="measures-count" placeholder="Количество отсчётов">
+									</div>
+									<div class="form-group">
+										<input class="parameter form-control" id="frequency" placeholder="Частота">
+									</div>
+									<div class="form-group">
+										<input class="parameter form-control" id="delay" placeholder="Задержка импульса">
+									</div>
 								</div>
 							</div>
 						</div>
@@ -173,26 +178,28 @@
 		</div>
 	</div>
 
-	<article class="d-flex justify-content-around containet-fluid">
-		<div class="modal fade" id="signal-info-modal" tabindex="-1" role="dialog"
-			aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-scrollable" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalScrollableTitle"></h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
 
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					</div>
+	<div class="modal fade" id="signal-info-modal" tabindex="-1" role="dialog"
+		aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-scrollable" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modal-signal-name"></h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="modal-signal-info">
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 				</div>
 			</div>
 		</div>
+	</div>
+
+	<article class="d-flex justify-content-around containet-fluid">
 	</article>
 	<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>

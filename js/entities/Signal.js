@@ -1,14 +1,4 @@
 export class Signal {
-	name;
-	channelsCount;
-	measuresCount;
-	frequency;
-	period;
-	recordingTime;
-	endTime;
-	id;
-	channels = [];
-
 	#renderCharts;
 
 	constructor(name, channelsCount, measuresCount, frequency, start, id) {
@@ -20,6 +10,8 @@ export class Signal {
 		this.recordingTime = start;
 		this.endTime = this.recordingTime + this.measuresCount * this.period;
 		this.id = id;
+		this.channels = [];
+
 
 		this.#renderCharts = () => {
 			this.channels.forEach((channel) => {

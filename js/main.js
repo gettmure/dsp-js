@@ -1,5 +1,6 @@
 import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
+import { Model } from './entities/Model.js'
 
 let signals = [];
 let isOpened = false;
@@ -61,10 +62,19 @@ $('#file-input').change(async function (event) {
 	if (!file) {
 		return;
 	}
+
+	if (signals.length == 0) {
+		const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control" id="signal-choice"></select></div>'
+		$('#options-container').before(SIGNALS_LIST_HTML);
+		$('#measures-count').remove();
+		$('#frequency').remove();
+	}
+
 	switch (getExtension(file.name)) {
 		case 'txt':
 			const data = await getDataFromTxt(file);
 			signals.push(data);
+			break;
 	};
 	signals[signals.length - 1].createCharts();
 })
@@ -91,10 +101,12 @@ $('#show-signal-navigation-menu-btn').click(function () {
 	isOpened = !isOpened;
 })
 
-$('#signals-info-menu').on('click', '.signal-info-btn', function () {
-	signals.forEach((signal) => {
-		showSignalInfo(signal);
+$(document).on('click', '.signal-info-btn', function () {
+	const signalId = $(this).attr('id').split('-')[0];
+	const signal = signals.find((signal) => {
+		return signal.id == signalId;
 	})
+	showSignalInfo(signal);
 })
 
 $(document).on('click', '.signal-btn', function () {
@@ -120,22 +132,53 @@ $(document).on('click', '#return-btn', function () {
 	$('#return-btn').css('display', 'none');
 })
 
-function createModel(signalId, modelType) {
-	switch (modelType) {
-		case 'Delayed single impulse': {
-			const impulseDelay = $('#delay').val();
-			const signal = signals.find((signal) => {
-				return signal.id == signalId;
-			})
-			if (signal) {
+$(document).on('click', '#determ-modelling-btn', function () {
 
-			}
+})
+
+$(document).on('change', '#model-type', function () {
+	const type = $(this).val();
+	const parametersContainer = $('#parameters-container');
+	let PARAMETERS_HTML;
+	const ADDITIONAL_PARAMETERS_HTML = '<div class="form-group"><input class="parameter form-control" id="measures-count" placeholder="Количество отсчётов"></div><div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота"></div>'
+
+	switch (type) {
+		case 'Delayed single impulse': {
+			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="delay" placeholder="Задержка импульса">';
+			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
+		}
+		case 'Delayed single bounce': {
+			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="delay" placeholder="Задержка скачка">';
+			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
+		}
+		case 'Decreasing discretized exponent': {
+			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="base" placeholder="Основание степени a^n">';
+			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
+		}
+		case 'Discretized sinusoid': {
+			const MAIN_PARAMETERS_HTML = `
+				<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
+				<div class="form-group"><input class="parameter form-control" id="circular-frequency" placeholder="Круговая частота"></div>
+				<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза"></div>`;
+			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
+		}
+		case 'Meander':
+		case 'Saw': {
+			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="period" placeholder="Период">';
+			signals.length == 0 ? PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + MAIN_PARAMETERS_HTML : PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
 		}
 	}
-}
+	parametersContainer.html(PARAMETERS_HTML);
+})
 
 $(document).on('click', '#create-model-btn', function () {
 	const signalId = $('#signal-choice').val();
 	const modelType = $('#model-type').val();
-	createModel(signalId, modelType);
+
+	// createModel(signalId, modelType);
 })
