@@ -1,6 +1,5 @@
 import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
-import { createCharts, renderChart } from './chart_renderer.js'
 
 let signals = [];
 let isOpened = false;
@@ -16,6 +15,11 @@ $('#about-btn').click(function () {
 $('#author-btn').click(function () {
 	alert('Мышалов Родион Б8118-02.03.01сцт 1 подгруппа');
 })
+
+export function getRandomColor() {
+	const COLORS_COUNT = 16777215;
+	return `#${Math.floor(Math.random() * COLORS_COUNT).toString(16)}`;
+}
 
 function getExtension(filename) {
 	let parts = filename.split('.');
@@ -62,16 +66,18 @@ $('#file-input').change(async function (event) {
 			const data = await getDataFromTxt(file);
 			signals.push(data);
 	};
-	createCharts(file.name, signals[signals.length - 1]);
+	signals[signals.length - 1].createCharts();
 })
 
 $(document).on('click', '.channel-btn', function () {
 	const clickedButton = this;
 	const signalId = $(clickedButton).parent().attr('id');
-	const signal = signals.find((signal) => {
+	const channel = signals.find((signal) => {
 		return signal.id == signalId;
+	}).channels.find((channel) => {
+		return channel.id == clickedButton.id;
 	});
-	renderChart(signal, clickedButton.id);
+	channel.showChart();
 })
 
 $('#show-signal-navigation-menu-btn').click(function () {
@@ -96,7 +102,7 @@ $(document).on('click', '.signal-btn', function () {
 	const menuSelector = `.channels-menu[id='${menuId}']`;
 	$('#signal-navigation-menu').css('display', 'none');
 	$(menuSelector).css('display', 'flex');
-	$('#return-btn').css('display', 'block')
+	$('#return-btn').css('display', 'block');
 })
 
 $(document).on('click', '.channel-btn', function () {
@@ -104,6 +110,8 @@ $(document).on('click', '.channel-btn', function () {
 	$('.signal-navigation-menu-container').css('right', '-15rem');
 	$('#signal-navigation-menu').css('display', 'block');
 	$('.channels-menu').css('display', 'none');
+	$('#return-btn').css('display', 'none');
+	isOpened = !isOpened;
 })
 
 $(document).on('click', '#return-btn', function () {
@@ -112,3 +120,22 @@ $(document).on('click', '#return-btn', function () {
 	$('#return-btn').css('display', 'none');
 })
 
+function createModel(signalId, modelType) {
+	switch (modelType) {
+		case 'Delayed single impulse': {
+			const impulseDelay = $('#delay').val();
+			const signal = signals.find((signal) => {
+				return signal.id == signalId;
+			})
+			if (signal) {
+
+			}
+		}
+	}
+}
+
+$(document).on('click', '#create-model-btn', function () {
+	const signalId = $('#signal-choice').val();
+	const modelType = $('#model-type').val();
+	createModel(signalId, modelType);
+})
