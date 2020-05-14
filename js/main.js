@@ -62,7 +62,6 @@ $('#file-input').change(async function (event) {
 	if (!file) {
 		return;
 	}
-
 	if (signals.length == 0) {
 		const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control" id="signal-choice"></select></div>'
 		$('#options-container').before(SIGNALS_LIST_HTML);
@@ -76,7 +75,7 @@ $('#file-input').change(async function (event) {
 			signals.push(data);
 			break;
 	};
-	signals[signals.length - 1].createCharts();
+	signals[signals.length - 1].renderCharts();
 })
 
 $(document).on('click', '.channel-btn', function () {
@@ -178,6 +177,10 @@ $(document).on('change', '#model-type', function () {
 $(document).on('click', '#create-model-btn', function () {
 	const signalId = $('#signal-choice').val();
 	const modelType = $('#model-type').val();
+	const modelId = `model${signal.id.match('\d+')[0]}`
+	const signal = signals.find((signal) => {
+		return signal.id == signalId;
+	})
+	// const model = new Model(`Модель сигнала ${signal.name}`, signal.measuresCount, signal.frequency, signal.recordingTime, modelId);
 
-	// createModel(signalId, modelType);
 })

@@ -1,20 +1,18 @@
+import { Source } from './Source.js';
 import { getRandomColor } from '../main.js';
 
-export class Channel {
-	name;
-	values = [];
-	chart;
-	id;
-
-	#showChart;
+export class Channel extends Source {
 	#getChartData;
 	#getMinMax;
 	#syncHandler;
 	#scrollHandler;
 
-	constructor(name, id) {
+	constructor(name, measuresCount, frequency, startTime, id, signalId) {
+		super(measuresCount, frequency, startTime, id)
 		this.name = name;
-		this.id = id;
+		this.signalId = signalId;
+		this.chart;
+		this.values = [];
 
 		this.#syncHandler = function (e, channels) {
 			channels.forEach((channel) => {
@@ -42,16 +40,16 @@ export class Channel {
 			})
 		}
 
-		this.#getChartData = function (period, startTime) {
+		this.#getChartData = function () {
 			let data = [];
 			let dataPoints = [];
-			let step = startTime;
+			let step = this.recordingTime;
 			for (let i = 0; i < this.values.length; i += 1) {
 				dataPoints.push({
 					x: new Date(step),
 					y: this.values[i],
 				});
-				step += period;
+				step += this.period;
 			}
 			let dataSeries = { type: 'line', color: getRandomColor() };
 			dataSeries.dataPoints = dataPoints;
@@ -68,10 +66,12 @@ export class Channel {
 			return [min, max];
 		}
 
-		this.#scrollHandler = function (e, signal, range) {
-			const classSelector = `.${signal.id}-slider`;
+		this.#scrollHandler = function (e, channels, range) {
+			const classSelector = `.${this.signalId}-slider`;
 			const trigger = e.trigger;
 			const currentLeftValue = e.axisX[0].viewportMinimum;
+			const start = this.recordingTime;
+			const end = this.endTime - range;
 			$(function () {
 				if (trigger == 'reset') {
 					if ($(classSelector).slider()) {
@@ -79,17 +79,18 @@ export class Channel {
 					}
 				}
 				if (trigger == 'zoom' || trigger == 'pan') {
+					console.log(start, end)
 					$(classSelector).slider({
-						min: signal.recordingTime,
-						max: signal.endTime - range,
+						min: start,
+						max: end,
 						value: currentLeftValue,
 						slide: function (e, ui) {
 							const leftLimit = ui.value;
 							const rightLimit = leftLimit + range;
-							if (rightLimit > signal.endTime) {
+							if (rightLimit > this.endTime) {
 								return;
 							};
-							signal.channels.forEach((channel) => {
+							channels.forEach((channel) => {
 								const currentAsixX = channel.chart.axisX[0];
 								currentAsixX.set('viewportMinimum', leftLimit, false)
 								currentAsixX.set('viewportMaximum', rightLimit);
@@ -104,12 +105,12 @@ export class Channel {
 		}
 	}
 
-	renderChart(signal) {
-		const chartData = this.#getChartData(signal.period, signal.recordingTime);
+	renderChart(channels) {
+		const chartData = this.#getChartData();
 		const CHANNEL_BUTTON_HTML = `<button class="dropdown-item channel-btn" type="button" id="${this.id}">${this.name}</button>`;
 		const [minimalPoint, maximalPoint] = this.#getMinMax(this.values);
 
-		$(`#${signal.id}`).append(CHANNEL_BUTTON_HTML);
+		$(`#${this.signalId}`).append(CHANNEL_BUTTON_HTML);
 		let chartDemo = new CanvasJS.Chart(`${this.id}`, {
 			width: 200,
 			height: 100,
@@ -142,13 +143,13 @@ export class Channel {
 				rangeChanging: (e) => {
 					const axisX = this.chart.axisX[0];
 					const range = axisX.get('viewportMaximum') - axisX.get('viewportMinimum');
-					this.#scrollHandler(e, signal, range);
+					this.#scrollHandler(e, channels, range);
 				},
 				rangeChanged: (e) => {
-					this.#syncHandler(e, signal.channels);
+					this.#syncHandler(e, channels);
 				},
 				title: {
-					text: signal.name,
+					text: this.name,
 				},
 				axisY: {
 					includeZero: true,
@@ -160,7 +161,7 @@ export class Channel {
 				},
 				data: chartData,
 			})
-		$(`#${this.id}-container > .canvasjs-chart-container`).after(`<div class="${signal.id}-slider" id="${this.id}-slider"></div>`);
+		$(`#${this.id}-container > .canvasjs-chart-container`).after(`<div class="${this.signalId}-slider" id="${this.id}-slider"></div>`);
 	}
 
 	showChart() {

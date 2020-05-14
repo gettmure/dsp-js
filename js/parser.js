@@ -1,7 +1,7 @@
 import { Signal } from './entities/Signal.js';
 import { Channel } from './entities/Channel.js';
 
-let chartIndex = 0;
+let channelIndex = 0;
 let signalIndex = 0;
 
 function parseDateTime(date) {
@@ -11,19 +11,22 @@ function parseDateTime(date) {
 
 export function parseTxtFile(signalName, fileContent) {
 	const fileData = fileContent.split('\n').filter(line => line[0] != '#');
+	const channelsCount = parseInt(fileData[0]);
+	const measuresCount = parseInt(fileData[1]);
+	const frequency = parseFloat(fileData[2]);
 	const startDate = fileData[3].replace(/(\d{2})-(\d{2})-(\d{4})/, "$3-$2-$1");
 	const startTime = fileData[4];
 	const date = `${startDate} ${startTime}`;
 	const unixtime = parseDateTime(date).getTime();
 	const signalId = `signal${signalIndex}`;
-	let signal = new Signal(signalName, parseInt(fileData[0]), parseInt(fileData[1]), parseFloat(fileData[2]), unixtime, signalId);
+	const signal = new Signal(signalName, channelsCount, measuresCount, frequency, unixtime, signalId);
 	fileData[5].split(';').forEach(channelName => {
 		if (channelName == "") {
 			return;
 		}
-		const chartId = `chart${chartIndex}`;
-		signal.channels.push(new Channel(channelName, chartId));
-		chartIndex++;
+		const channelId = `chart${channelIndex}`;
+		signal.channels.push(new Channel(channelName, measuresCount, frequency, unixtime, channelId, signalId));
+		channelIndex++;
 	});
 	for (let lineIndex = 6; lineIndex < fileData.length; lineIndex++) {
 		if (fileData[lineIndex] == '') {
