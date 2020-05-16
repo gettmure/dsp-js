@@ -11,10 +11,13 @@ export class Channel extends Source {
 		super(measuresCount, frequency, startTime, id)
 		this.name = name;
 		this.signalId = signalId;
+		this.demoChart;
 		this.chart;
 		this.values = [];
+		this.minimalValue;
+		this.maximalValue;
 
-		this.#syncHandler = function (e, channels) {
+		this.#syncHandler = (e, channels) => {
 			channels.forEach((channel) => {
 				const chart = channel.chart;
 				const options = chart.options;
@@ -40,33 +43,19 @@ export class Channel extends Source {
 			})
 		}
 
-		this.#getChartData = function () {
-			let data = [];
-			let dataPoints = [];
-			let step = this.recordingTime;
-			for (let i = 0; i < this.values.length; i += 1) {
-				dataPoints.push({
-					x: new Date(step),
-					y: this.values[i],
-				});
-				step += this.period;
-			}
-			let dataSeries = { type: 'line', color: getRandomColor() };
-			dataSeries.dataPoints = dataPoints;
-			data.push(dataSeries);
-			return data;
-		}
 
-		this.#getMinMax = function (array) {
+
+		this.#getMinMax = (array) => {
 			let min = array[0], max = array[0];
 			for (let i = 1; i < array.length; i++) {
 				min = (array[i] < min) ? array[i] : min;
 				max = (array[i] > max) ? array[i] : max;
 			}
-			return [min, max];
+			this.minimalValue = min;
+			this.maximalValue = max;
 		}
 
-		this.#scrollHandler = function (e, channels, range) {
+		this.#scrollHandler = (e, channels, range) => {
 			const classSelector = `.${this.signalId}-slider`;
 			const trigger = e.trigger;
 			const currentLeftValue = e.axisX[0].viewportMinimum;
@@ -79,7 +68,6 @@ export class Channel extends Source {
 					}
 				}
 				if (trigger == 'zoom' || trigger == 'pan') {
-					console.log(start, end)
 					$(classSelector).slider({
 						min: start,
 						max: end,
@@ -106,12 +94,12 @@ export class Channel extends Source {
 	}
 
 	renderChart(channels) {
-		const chartData = this.#getChartData();
+		const chartData = this._getChartData();
 		const CHANNEL_BUTTON_HTML = `<button class="dropdown-item channel-btn" type="button" id="${this.id}">${this.name}</button>`;
-		const [minimalPoint, maximalPoint] = this.#getMinMax(this.values);
+		this.#getMinMax(this.values);
 
 		$(`#${this.signalId}`).append(CHANNEL_BUTTON_HTML);
-		let chartDemo = new CanvasJS.Chart(`${this.id}`, {
+		this.demoChart = new CanvasJS.Chart(`${this.id}`, {
 			width: 200,
 			height: 100,
 			interactivityEnabled: false,
@@ -121,8 +109,8 @@ export class Channel extends Source {
 			axisY: {
 				title: "",
 				valueFormatString: " ",
-				minimum: minimalPoint,
-				maximum: maximalPoint
+				minimum: this.minimalValue,
+				maximum: this.maximalValue
 			},
 			axisX: {
 				title: "",
@@ -131,7 +119,7 @@ export class Channel extends Source {
 			data: chartData,
 		})
 		$('.channel-btn > div > .canvasjs-chart-canvas + .canvasjs-chart-canvas').css('position', '');
-		chartDemo.render();
+		this.demoChart.render();
 		$('article').append(`<div class="chartContainer mb-2" id="${this.id}-container"></div>`);
 		this.chart =
 			new CanvasJS.Chart(`${this.id}-container`, {
@@ -153,15 +141,32 @@ export class Channel extends Source {
 				},
 				axisY: {
 					includeZero: true,
-					minimum: minimalPoint,
-					maximum: maximalPoint
+					minimum: this.minimalValue,
+					maximum: this.maximalValue
 				},
 				axisX: {
 					includeZero: true,
 				},
 				data: chartData,
 			})
-		$(`#${this.id}-container > .canvasjs-chart-container`).after(`<div class="${this.signalId}-slider" id="${this.id}-slider"></div>`);
+		$(`#${this.id}-container`).append(`<div class="slider-container"><div class="${this.signalId}-slider" id="${this.id}-slider"></div></div>`);
+	}
+
+	_getChartData() {
+		let data = [];
+		let dataPoints = [];
+		let step = this.recordingTime;
+		for (let i = 0; i < this.measuresCount; i += 1) {
+			dataPoints.push({
+				x: new Date(step),
+				y: this.values[i],
+			});
+			step += this.period;
+		}
+		let dataSeries = { type: 'line', color: getRandomColor() };
+		dataSeries.dataPoints = dataPoints;
+		data.push(dataSeries);
+		return data;
 	}
 
 	showChart() {

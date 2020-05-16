@@ -1,6 +1,7 @@
 import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
 import { Model } from './entities/Model.js'
+import { Channel } from './entities/Channel.js';
 
 let signals = [];
 let isOpened = false;
@@ -56,7 +57,6 @@ async function getDataFromTxt(file) {
 		console.log(e);
 	}
 }
-
 $('#file-input').change(async function (event) {
 	const file = event.target.files[0];
 	if (!file) {
@@ -75,17 +75,22 @@ $('#file-input').change(async function (event) {
 			signals.push(data);
 			break;
 	};
-	signals[signals.length - 1].renderCharts();
+	signals[signals.length - 1].renderChannels();
 })
 
 $(document).on('click', '.channel-btn', function () {
+	let channel;
 	const clickedButton = this;
 	const signalId = $(clickedButton).parent().attr('id');
-	const channel = signals.find((signal) => {
-		return signal.id == signalId;
-	}).channels.find((channel) => {
-		return channel.id == clickedButton.id;
-	});
+	const chartId = $(clickedButton).attr('id');
+	const isModel = (chartId.match(/model/gm) != null);
+	const signal = signals.find((signal) => { return signal.id == signalId });
+	if (isModel) {
+		channel = signal.models.find((model) => { return model.id == chartId });
+	}
+	else {
+		channel = signal.channels.find((channel) => { return channel.id == chartId });
+	}
 	channel.showChart();
 })
 
@@ -175,12 +180,19 @@ $(document).on('change', '#model-type', function () {
 })
 
 $(document).on('click', '#create-model-btn', function () {
-	const signalId = $('#signal-choice').val();
 	const modelType = $('#model-type').val();
-	const modelId = `model${signal.id.match('\d+')[0]}`
-	const signal = signals.find((signal) => {
-		return signal.id == signalId;
-	})
-	// const model = new Model(`Модель сигнала ${signal.name}`, signal.measuresCount, signal.frequency, signal.recordingTime, modelId);
-
+	const isRendered = signals.some((signal) => {
+		return signal.models.some((model) => { return model.type == modelType });
+	});
+	if (!isRendered) {
+		const parameters = $('.parameter').map(function () {
+			return parseFloat($(this).val());
+		}).get();
+		const signalId = $('#signal-choice').val();
+		const signal = signals.find((signal) => {
+			return signal.id == signalId;
+		})
+		signal.renderModel(modelType, parameters);
+		console.log(signals)
+	}
 })

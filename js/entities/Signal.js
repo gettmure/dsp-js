@@ -1,13 +1,16 @@
 import { Source } from "./Source.js";
+import { Model } from "./Model.js";
 
 export class Signal extends Source {
 	#createButtons;
+	#getModelData;
 
 	constructor(name, channelsCount, measuresCount, frequency, startTime, id) {
 		super(measuresCount, frequency, startTime, id)
 		this.name = name;
 		this.channelsCount = channelsCount;
 		this.channels = [];
+		this.models = [];
 
 		this.#createButtons = () => {
 			const SIGNAL_BUTTON_HTML =
@@ -30,12 +33,77 @@ export class Signal extends Source {
 			$('#signals-info-menu').append(SIGNAL_INFO_BUTTON_HTML);
 			$('#signal-choice').append(`<option class="signal-item" value="${this.id}" id="${this.id.match(/\d+/)[0]}">${this.name}</option>`)
 		}
+
+		this.#getModelData = (params, type) => {
+			let data = [];
+			let modelFunction;
+			switch (type) {
+				case 'Delayed single impulse': {
+					modelFunction = (params, step) => {
+						const impulseDelay = params[0];
+						return (step == impulseDelay ? 1 : 0);
+					}
+					break;
+				}
+				case 'Delayed single bounce': {
+					modelFunction = (params, step) => {
+						const bounceDelay = params[0];
+						return (step >= bounceDelay ? 1 : 0);
+					}
+					break;
+				}
+				case 'Decreasing discretized exponent': {
+					modelFunction = (params, step) => {
+						const base = params[0];
+						return Math.pow(base, step)
+					}
+					break;
+				}
+				case 'Discretized sinusoid': {
+					modelFunction = (params, step) => {
+						const amplitude = params[0];
+						const frequency = params[1];
+						const phase = params[2];
+						return amplitude * Math.sin(frequency * step + phase);
+					}
+					break;
+				}
+				case 'Meander': {
+					modelFunction = (params, step) => {
+						const period = params[0];
+						return ((step % period) < (period / 2) ? 1 : -1);
+					}
+					break;
+				}
+				case 'Saw': {
+					modelFunction = (params, step) => {
+						const period = params[0];
+						return ((step % period) / period);
+					}
+					break;
+				}
+			}
+			for (let i = 0; i < this.measuresCount; i++) {
+				const value = modelFunction(params, i + 1);
+				data.push(value);
+			}
+			return data;
+		}
 	}
 
-	renderCharts = () => {
+	renderChannels() {
 		this.#createButtons();
 		this.channels.forEach((channel) => {
 			channel.renderChart(this.channels)
 		});
+	}
+
+	renderModel(type, parameters) {
+		const modelIndex = this.channels.length + this.models.length;
+		const modelId = `model-chart${modelIndex}`;
+		const model = new Model(type, this.measuresCount, this.frequency, this.recordingTime, type, modelId, this.id);
+		model.values = this.#getModelData(parameters, model.type);
+		this.models.push(model);
+		model.renderChart(this.models);
 	}
 }

@@ -49,10 +49,6 @@ article {
     padding: 52px;
 }
 
-.canvasjs-chart-container > .canvasjs-chart-canvas + .canvasjs-chart-canvas {
-    position: inherit !important;
-}
-
 .canvasjs-chart-credit {
     display: none;
 }
@@ -97,4 +93,8 @@ article {
 .channel-btn > .canvasjs-chart-container {
     display: flex;
     justify-content: center;
+}
+
+.slider-container {
+    margin-top: 60%;
 }
