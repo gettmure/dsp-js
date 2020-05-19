@@ -28,11 +28,10 @@
 }
 
 .channels-menu {
-    transition: 0.5s;
     display: none;
-    justify-content: center;
-    flex-direction: column;
-    overflow-y: auto;
+    overflow: auto;
+    height: 90%;
+    transition: 0.5s;
 }
 
 article {

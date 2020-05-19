@@ -21,7 +21,7 @@ export class Signal extends Source {
 						</button>
 					</div>
 				</li>`
-			const CHANNELS_MENU_HTML = `<div class="channels-menu justify-content-around" id="${this.id}"></div>`;
+			const CHANNELS_MENU_HTML = `<div class="channels-menu" id="${this.id}"></div>`;
 			const SIGNAL_INFO_BUTTON_HTML = `<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${this.id}-info">${this.name}</button>`;
 
 			if ($('.signal-navigation-menu-container').css('display') == 'none') {

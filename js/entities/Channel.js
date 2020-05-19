@@ -5,7 +5,7 @@ export class Channel extends Source {
 	#getChartData;
 	#getMinMax;
 	#syncHandler;
-	#scrollHandler;
+	#scrollHandler
 
 	constructor(name, measuresCount, frequency, startTime, id, signalId) {
 		super(measuresCount, frequency, startTime, id)
@@ -43,7 +43,22 @@ export class Channel extends Source {
 			})
 		}
 
-
+		this.#getChartData = () => {
+			let data = [];
+			let dataPoints = [];
+			let step = this.recordingTime;
+			for (let i = 0; i < this.measuresCount; i += 1) {
+				dataPoints.push({
+					x: new Date(step),
+					y: this.values[i],
+				});
+				step += this.period;
+			}
+			let dataSeries = { type: 'line', color: getRandomColor() };
+			dataSeries.dataPoints = dataPoints;
+			data.push(dataSeries);
+			return data;
+		}
 
 		this.#getMinMax = (array) => {
 			let min = array[0], max = array[0];
@@ -56,7 +71,7 @@ export class Channel extends Source {
 		}
 
 		this.#scrollHandler = (e, channels, range) => {
-			const classSelector = `.${this.signalId}-slider`;
+			const classSelector = this._getSelector();
 			const trigger = e.trigger;
 			const currentLeftValue = e.axisX[0].viewportMinimum;
 			const start = this.recordingTime;
@@ -94,7 +109,7 @@ export class Channel extends Source {
 	}
 
 	renderChart(channels) {
-		const chartData = this._getChartData();
+		const chartData = this.#getChartData();
 		const CHANNEL_BUTTON_HTML = `<button class="dropdown-item channel-btn" type="button" id="${this.id}">${this.name}</button>`;
 		this.#getMinMax(this.values);
 
@@ -149,24 +164,15 @@ export class Channel extends Source {
 				},
 				data: chartData,
 			})
+		this._createScroll();
+	}
+
+	_createScroll() {
 		$(`#${this.id}-container`).append(`<div class="slider-container"><div class="${this.signalId}-slider" id="${this.id}-slider"></div></div>`);
 	}
 
-	_getChartData() {
-		let data = [];
-		let dataPoints = [];
-		let step = this.recordingTime;
-		for (let i = 0; i < this.measuresCount; i += 1) {
-			dataPoints.push({
-				x: new Date(step),
-				y: this.values[i],
-			});
-			step += this.period;
-		}
-		let dataSeries = { type: 'line', color: getRandomColor() };
-		dataSeries.dataPoints = dataPoints;
-		data.push(dataSeries);
-		return data;
+	_getSelector() {
+		return `.${this.signalId}-slider`;
 	}
 
 	showChart() {

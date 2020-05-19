@@ -117,7 +117,7 @@ $(document).on('click', '.signal-btn', function () {
 	const menuId = $(this).attr('id').split('-')[0];
 	const menuSelector = `.channels-menu[id='${menuId}']`;
 	$('#signal-navigation-menu').css('display', 'none');
-	$(menuSelector).css('display', 'flex');
+	$(menuSelector).css('display', 'block');
 	$('#return-btn').css('display', 'block');
 })
 
@@ -193,6 +193,5 @@ $(document).on('click', '#create-model-btn', function () {
 			return signal.id == signalId;
 		})
 		signal.renderModel(modelType, parameters);
-		console.log(signals)
 	}
 })
