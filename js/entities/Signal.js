@@ -82,9 +82,41 @@ export class Signal extends Source {
 					}
 					break;
 				}
+				case 'Exponential envelope': {
+					modelFunction = (params, step) => {
+						const amplitude = params[0];
+						const width = params[1];
+						const carrierFrequency = params[2];
+						const initialPhase = params[3];
+						return amplitude * Math.exp(-(step / width)) * Math.cos(2 * Math.PI * carrierFrequency * step + initialPhase);
+					}
+					break;
+				}
+				case 'Balance envelope': {
+					modelFunction = (params, step) => {
+						const amplitude = params[0];
+						const envelopeFrequency = params[1];
+						const carrierFrequency = params[2];
+						const initialPhase = params[3];
+						return amplitude * Math.cos(2 * Math.PI * envelopeFrequency * step) * Math.cos(2 * Math.PI * carrierFrequency * step + initialPhase);
+					}
+					break
+				}
+				case 'Tonal envelope': {
+					modelFunction = (params, step) => {
+						const amplitude = params[0];
+						const envelopeFrequency = params[1];
+						const carrierFrequency = params[2];
+						const initialPhase = params[3];
+						const index = params[4];
+						return amplitude * (1 + index * Math.cos(2 * Math.PI * envelopeFrequency * step)) * Math.cos(2 * Math.PI * carrierFrequency * step + initialPhase);
+					}
+					break
+				}
 			}
 			for (let i = 0; i < this.measuresCount; i++) {
-				const value = modelFunction(params, i + 1);
+				const value = modelFunction(params, (i + 1) * this.period / 1000);
+				console.log(value)
 				data.push(value);
 			}
 			return data;
@@ -101,7 +133,7 @@ export class Signal extends Source {
 	renderModel(type, parameters) {
 		const modelIndex = this.channels.length + this.models.length;
 		const modelId = `model-chart${modelIndex}`;
-		const model = new Model(type, this.measuresCount, this.frequency, this.recordingTime, type, modelId, this.id);
+		const model = new Model(type, this.measuresCount, this.frequency, this.recordingTime, type, modelId, this.id, parameters);
 		model.values = this.#getModelData(parameters, model.type);
 		this.models.push(model);
 		model.renderChart(this.models);

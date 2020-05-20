@@ -1,9 +1,10 @@
 import { Channel } from "./Channel.js";
 
 export class Model extends Channel {
-    constructor(name, measuresCount, frequency, start, type, id, signalId) {
+    constructor(name, measuresCount, frequency, start, type, id, signalId, parameters) {
         super(name, measuresCount, frequency, start, id, signalId);
         this.type = type;
+        this.parameters = parameters;
     }
 
     _createScroll() {

@@ -1,7 +1,5 @@
 import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
-import { Model } from './entities/Model.js'
-import { Channel } from './entities/Channel.js';
 
 let signals = [];
 let isOpened = false;
@@ -136,6 +134,50 @@ $(document).on('click', '#return-btn', function () {
 	$('#return-btn').css('display', 'none');
 })
 
+$(document).on('click', '.modelling-btn', function () {
+	const ADDITIONAL_PARAMETERS_HTML = '<div class="form-group"><input class="parameter form-control" id="measures-count" placeholder="Количество отсчётов"></div><div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота"></div>'
+	const buttonId = $(this).attr('id');
+	switch (buttonId) {
+		case 'determinated-signal-btn': {
+			let DEFAULT_PARAMETERS_HTML = '<div class="form-group"><input class="parameter form-control" id="delay" placeholder="Задержка импульса"></div>';
+			const MODEL_TYPE_ITEMS_HTML = `
+				<option value="Delayed single impulse">Задержанный единичный импульс</option>
+				<option value="Delayed single bounce">Задержанный единичный скачок</option>
+				<option value="Decreasing discretized exponent">Дискретизированная убывающая
+					экспонента
+				</option>
+				<option value="Discretized sinusoid">Дискретизированная синусоида</option>
+				<option value="Meander">"Меандр" (прямоугольная решетка)</option>
+				<option value="Saw">“Пила"</option>`;
+			$('#model-type').html(MODEL_TYPE_ITEMS_HTML);
+			if (signals.length == 0) {
+				DEFAULT_PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + DEFAULT_PARAMETERS_HTML;
+			}
+			$('#parameters-container').html(DEFAULT_PARAMETERS_HTML);
+			break;
+		}
+
+		case 'random-signal-btn': {
+			let DEFAULT_PARAMETERS_HTML = `
+			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
+			<div class="form-group"><input class="parameter form-control" id="envelope-width" placeholder="Ширина огибающей"></div>
+			<div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота несущей"></div>
+			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>`;
+			const MODEL_TYPE_ITEMS_HTML = `
+				<option value="Exponential envelope">Экспоненциальная огибающая</option>
+				<option value="Balance envelope">Балансная огибающая</option>
+				<option value="Tonal envelope">Тональная огибающая</option>
+			`;
+			$('#model-type').html(MODEL_TYPE_ITEMS_HTML);
+			if (signals.length == 0) {
+				DEFAULT_PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + DEFAULT_PARAMETERS_HTML;
+			}
+			$('#parameters-container').html(DEFAULT_PARAMETERS_HTML);
+			break;
+		}
+	}
+})
+
 $(document).on('change', '#model-type', function () {
 	const type = $(this).val();
 	const parametersContainer = $('#parameters-container');
@@ -172,6 +214,34 @@ $(document).on('change', '#model-type', function () {
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
+		case 'Exponential envelope': {
+			const MAIN_PARAMETERS_HTML = `
+			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
+			<div class="form-group"><input class="parameter form-control" id="envelope-width" placeholder="Ширина огибающей"></div>
+			<div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота несущей"></div>
+			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>`;
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
+		}
+		case 'Balance envelope': {
+			const MAIN_PARAMETERS_HTML = `
+			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
+			<div class="form-group"><div class="form-group"><input class="parameter form-control" id="envelope-frequency" placeholder="Частота огибающей"></div>
+			<div class="form-group"><input class="parameter form-control" id="carrier-frequency" placeholder="Частота несущей"></div>
+			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>`
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
+		}
+		case 'Tonal envelope': {
+			const MAIN_PARAMETERS_HTML = `
+			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
+			<div class="form-group"><input class="parameter form-control" id="envelope-frequency" placeholder="Частота огибающей"></div>
+			<div class="form-group"><input class="parameter form-control" id="carrier-frequency" placeholder="Частота несущей"></div>
+			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>
+			<div class="form-group"><input class="parameter form-control" id="depth-index" placeholder="Индекс глубины модуляции"></div>`
+			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
+			break;
+		}
 	}
 	if (signals.length == 0) {
 		PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + PARAMETERS_HTML;
@@ -179,15 +249,24 @@ $(document).on('change', '#model-type', function () {
 	parametersContainer.html(PARAMETERS_HTML);
 })
 
+function arraysAreEqual(arr1, arr2) {
+	if (arr1.length !== arr2.length) return false;
+	for (let i = 0; i < arr1.length; i++) {
+		if (arr1[i] !== arr2[i]) return false;
+	}
+	return true;
+
+};
+
 $(document).on('click', '#create-model-btn', function () {
 	const modelType = $('#model-type').val();
+	const parameters = $('.parameter').map(function () {
+		return parseFloat($(this).val());
+	}).get();
 	const isRendered = signals.some((signal) => {
-		return signal.models.some((model) => { return model.type == modelType });
+		return (signal.models.some((model) => { return ((model.type == modelType) && (arraysAreEqual(model.parameters, parameters))) }) && signal.models.length != 0);
 	});
 	if (!isRendered) {
-		const parameters = $('.parameter').map(function () {
-			return parseFloat($(this).val());
-		}).get();
 		const signalId = $('#signal-choice').val();
 		const signal = signals.find((signal) => {
 			return signal.id == signalId;

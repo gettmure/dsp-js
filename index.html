@@ -39,14 +39,15 @@
 								Моделирование
 							</a>
 							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-								<button type="button" id="determ-modelling-btn" class="btn btn-primary"
-									data-toggle="modal" data-target="#determ-modelling-modal">
+								<button type="button" id="determinated-signal-btn" class="dropdown-item modelling-btn"
+									data-toggle="modal" data-target="#modelling-modal">
 									Детерминированный сигнал
 								</button>
 
-								<button class="btn dropdown-item" href="#"
-									style="white-space:normal; word-wrap: normal">Случайных
-									сигналов</button>
+								<button type="button" id="random-signal-btn" class="dropdown-item modelling-btn"
+									data-toggle="modal" data-target="#modelling-modal">
+									Случайный сигнал
+								</button>
 							</div>
 						</div>
 					</div>
@@ -128,13 +129,13 @@
 		</button>
 	</div>
 
-	<div class="modal fade" id="determ-modelling-modal" tabindex="-1" role="dialog"
-		aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	<div class="modal fade" id="modelling-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+		aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalCenterTitle">
-						Моделирование детерминированных сигналов
+						Моделирование сигналов
 					</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
@@ -146,14 +147,6 @@
 							<div class="form-group">
 								<label for="model-type">Выберите модель сигнала</label>
 								<select class="form-control" id="model-type">
-									<option value="Delayed single impulse">Задержанный единичный импульс</option>
-									<option value="Delayed single bounce">Задержанный единичный скачок</option>
-									<option value="Decreasing discretized exponent">Дискретизированная убывающая
-										экспонента
-									</option>
-									<option value="Discretized sinusoid">Дискретизированная синусоида</option>
-									<option value="Meander">"Меандр" (прямоугольная решетка)</option>
-									<option value="Saw">“Пила"</option>
 								</select>
 							</div>
 							<div class="form-group">
