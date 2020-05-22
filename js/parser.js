@@ -2,14 +2,13 @@ import { Signal } from './entities/Signal.js';
 import { Channel } from './entities/Channel.js';
 
 let channelIndex = 0;
-let signalIndex = 0;
 
-function parseDateTime(date) {
+export function parseDateTime(date) {
 	const dateElements = date.split(/\D/);
 	return new Date(dateElements[0], dateElements[1] - 1, dateElements[2], dateElements[3], dateElements[4], dateElements[5]);
 }
 
-export function parseTxtFile(signalName, fileContent) {
+export function parseTxtFile(signalName, fileContent, signalIndex) {
 	const fileData = fileContent.split('\n').filter(line => line[0] != '#');
 	const channelsCount = parseInt(fileData[0]);
 	const measuresCount = parseInt(fileData[1]);

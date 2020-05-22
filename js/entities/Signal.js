@@ -116,7 +116,6 @@ export class Signal extends Source {
 			}
 			for (let i = 0; i < this.measuresCount; i++) {
 				const value = modelFunction(params, (i + 1) * this.period / 1000);
-				console.log(value)
 				data.push(value);
 			}
 			return data;
@@ -131,6 +130,9 @@ export class Signal extends Source {
 	}
 
 	renderModel(type, parameters) {
+		if (this.channels.length == 0) {
+			this.#createButtons();
+		}
 		const modelIndex = this.channels.length + this.models.length;
 		const modelId = `model-chart${modelIndex}`;
 		const model = new Model(type, this.measuresCount, this.frequency, this.recordingTime, type, modelId, this.id, parameters);

@@ -1,7 +1,8 @@
 import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
+import { Signal } from './entities/Signal.js';
 
-let signals = [];
+export let signals = [];
 let isOpened = false;
 
 $('#open-file-btn').click(function () {
@@ -49,7 +50,7 @@ function readTxtFile(file) {
 async function getDataFromTxt(file) {
 	try {
 		const fileContent = await readTxtFile(file);
-		const result = parseTxtFile(file.name, fileContent);
+		const result = parseTxtFile(file.name, fileContent, signals.length);
 		return result;
 	} catch (e) {
 		console.log(e);
@@ -255,22 +256,36 @@ function arraysAreEqual(arr1, arr2) {
 		if (arr1[i] !== arr2[i]) return false;
 	}
 	return true;
-
 };
 
 $(document).on('click', '#create-model-btn', function () {
 	const modelType = $('#model-type').val();
-	const parameters = $('.parameter').map(function () {
+	const signalId = $('#signal-choice').val();
+	let parameters = $('.parameter').map(function () {
 		return parseFloat($(this).val());
 	}).get();
 	const isRendered = signals.some((signal) => {
-		return (signal.models.some((model) => { return ((model.type == modelType) && (arraysAreEqual(model.parameters, parameters))) }) && signal.models.length != 0);
+		return (signal.id == signalId) && (signal.models.some((model) => { return ((model.type == modelType) && (arraysAreEqual(model.parameters, parameters))) }) && signal.models.length != 0);
 	});
 	if (!isRendered) {
-		const signalId = $('#signal-choice').val();
-		const signal = signals.find((signal) => {
-			return signal.id == signalId;
-		})
+		let signal;
+		if (signals.length == 0) {
+			const measuresCount = parameters[0];
+			const frequency = parameters[1];
+			parameters = parameters.splice(2, parameters.length - 2);
+			const unixtime = Date.parse('2000-01-01 00:00:00.000 GMT');
+			signal = new Signal(`Пользовательский сигнал ${signals.length + 1}`, 1, measuresCount, frequency, unixtime, `signal${signals.length}`);
+			signals.push(signal);
+			const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control" id="signal-choice"></select></div>'
+			$('#options-container').before(SIGNALS_LIST_HTML);
+			$('#measures-count').remove();
+			$('#frequency').remove();
+		}
+		else {
+			signal = signals.find((signal) => {
+				return signal.id == signalId;
+			})
+		}
 		signal.renderModel(modelType, parameters);
 	}
 })

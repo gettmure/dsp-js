@@ -112,7 +112,6 @@ export class Channel extends Source {
 		const chartData = this.#getChartData();
 		const CHANNEL_BUTTON_HTML = `<button class="dropdown-item channel-btn" type="button" id="${this.id}">${this.name}</button>`;
 		this.#getMinMax(this.values);
-
 		$(`#${this.signalId}`).append(CHANNEL_BUTTON_HTML);
 		this.demoChart = new CanvasJS.Chart(`${this.id}`, {
 			width: 200,
