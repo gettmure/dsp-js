@@ -32,6 +32,12 @@ function getName(filename) {
 	return parts[0];
 }
 
+function getSignal(signals, id) {
+	return signals.find((signal) => {
+		return signal.id == id;
+	})
+}
+
 function readTxtFile(file) {
 	const fileReader = new FileReader();
 	return new Promise((resolve, reject) => {
@@ -83,7 +89,7 @@ $(document).on('click', '.channel-btn', function () {
 	const signalId = $(clickedButton).parent().attr('id');
 	const chartId = $(clickedButton).attr('id');
 	const isModel = (chartId.match(/model/gm) != null);
-	const signal = signals.find((signal) => { return signal.id == signalId });
+	const signal = getSignal(signals, signalId);
 	if (isModel) {
 		channel = signal.models.find((model) => { return model.id == chartId });
 	}
@@ -106,9 +112,7 @@ $('#show-signal-navigation-menu-btn').click(function () {
 
 $(document).on('click', '.signal-info-btn', function () {
 	const signalId = $(this).attr('id').split('-')[0];
-	const signal = signals.find((signal) => {
-		return signal.id == signalId;
-	})
+	const signal = getSignal(signals, signalId);
 	showSignalInfo(signal);
 })
 
@@ -274,7 +278,7 @@ $(document).on('click', '#create-model-btn', function () {
 			const frequency = parameters[1];
 			parameters = parameters.splice(2, parameters.length - 2);
 			const unixtime = Date.parse('2000-01-01 00:00:00.000 GMT');
-			signal = new Signal(`Пользовательский сигнал ${signals.length + 1}`, 1, measuresCount, frequency, unixtime, `signal${signals.length}`);
+			signal = new Signal(`Пользовательский сигнал`, 1, measuresCount, frequency, unixtime, `signal${signals.length}`);
 			signals.push(signal);
 			const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control" id="signal-choice"></select></div>'
 			$('#options-container').before(SIGNALS_LIST_HTML);
@@ -282,9 +286,7 @@ $(document).on('click', '#create-model-btn', function () {
 			$('#frequency').remove();
 		}
 		else {
-			signal = signals.find((signal) => {
-				return signal.id == signalId;
-			})
+			signal = getSignal(signals, signalId);
 		}
 		signal.renderModel(modelType, parameters);
 	}
