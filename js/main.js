@@ -140,11 +140,11 @@ $(document).on('click', '#return-btn', function () {
 })
 
 $(document).on('click', '.modelling-btn', function () {
-	const ADDITIONAL_PARAMETERS_HTML = '<div class="form-group"><input class="parameter form-control" id="measures-count" placeholder="Количество отсчётов"></div><div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота"></div>'
+	const ADDITIONAL_PARAMETERS_HTML = '<div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>'
 	const buttonId = $(this).attr('id');
 	switch (buttonId) {
 		case 'determinated-signal-btn': {
-			let DEFAULT_PARAMETERS_HTML = '<div class="form-group"><input class="parameter form-control" id="delay" placeholder="Задержка импульса"></div>';
+			let DEFAULT_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
 			const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Delayed single impulse">Задержанный единичный импульс</option>
 				<option value="Delayed single bounce">Задержанный единичный скачок</option>
@@ -164,10 +164,10 @@ $(document).on('click', '.modelling-btn', function () {
 
 		case 'random-signal-btn': {
 			let DEFAULT_PARAMETERS_HTML = `
-			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
-			<div class="form-group"><input class="parameter form-control" id="envelope-width" placeholder="Ширина огибающей"></div>
-			<div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота несущей"></div>
-			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>`;
+			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input class="parameter form-control" id="amplitude" placeholder="a"></div>
+			<div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input class="parameter form-control" id="envelope-width" placeholder="tao"></div>
+			<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="frequency" placeholder="fн"></div>
+			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
 			const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Exponential envelope">Экспоненциальная огибающая</option>
 				<option value="Balance envelope">Балансная огибающая</option>
@@ -184,66 +184,123 @@ $(document).on('click', '.modelling-btn', function () {
 })
 
 $(document).on('change', '#model-type', function () {
+	const signalId = $('#signal-choice').val();
+	const signal = getSignal(signals, signalId);
 	const type = $(this).val();
 	const parametersContainer = $('#parameters-container');
 	let PARAMETERS_HTML;
-	const ADDITIONAL_PARAMETERS_HTML = '<div class="form-group"><input class="parameter form-control" id="measures-count" placeholder="Количество отсчётов"></div><div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота"></div>'
+	const ADDITIONAL_PARAMETERS_HTML = '<div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>'
 
 	switch (type) {
 		case 'Delayed single impulse': {
-			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="delay" placeholder="Задержка импульса">';
+			let MAIN_PARAMETERS_HTML;
+			if (signals.length == 0) {
+				MAIN_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
+			}
+			else {
+				const DEFAULT_DELAY = signal.measuresCount / 2;
+				MAIN_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, ${signal != undefined ? signal.measuresCount : "N"}]</label><input class="parameter form-control" id="delay" value=${DEFAULT_DELAY} placeholder="N0">`;
+			}
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Delayed single bounce': {
-			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="delay" placeholder="Задержка скачка">';
+			let MAIN_PARAMETERS_HTML;
+			if (signals.length == 0) {
+				MAIN_PARAMETERS_HTML = `<label for="delay">Задержка скачка (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
+			}
+			else {
+				const DEFAULT_DELAY = signal.measuresCount / 2;
+				MAIN_PARAMETERS_HTML = `<label for="delay">Задержка скачка (N0): [1, ${signal.measuresCount}]</label><input class="parameter form-control" id="delay" value=${DEFAULT_DELAY} placeholder="N0">`;
+			}
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Decreasing discretized exponent': {
-			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="base" placeholder="Основание степени a^n">';
+			const DEFAULT_BASE = 0.5;
+			const MAIN_PARAMETERS_HTML = `<label for="base">Основание степени (a): a -> (0, 1)</label><input value=${DEFAULT_BASE} class="parameter form-control" id="base" placeholder="a">`;
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Discretized sinusoid': {
+			const DEFAULT_AMPLITUDE = 1;
+			const DEFAULT_CIRCULAR_FREQUENCY = 1.570796326;
+			const DEFAULT_INITIAL_PHASE = 0;
 			const MAIN_PARAMETERS_HTML = `
-				<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
-				<div class="form-group"><input class="parameter form-control" id="circular-frequency" placeholder="Круговая частота"></div>
-				<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза"></div>`;
+				<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
+				<div class="form-group"><label for="circular-frequency">Круговая частота (w): w -> [0, PI]</label><input value=${DEFAULT_CIRCULAR_FREQUENCY} class="parameter form-control" id="circular-frequency" placeholder="w"></div>
+				<div class="form-group"><label for="initial-phase">Начальная фаза (phi): phi -> [0, 2*PI]</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Meander':
 		case 'Saw': {
-			const MAIN_PARAMETERS_HTML = '<input class="parameter form-control" id="period" placeholder="Период">';
+			const DEFAULT_PERIOD = 5;
+			const MAIN_PARAMETERS_HTML = `<label for="period">Период (L)</label><input value=${DEFAULT_PERIOD} class="parameter form-control" id="period" placeholder="L">`;
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Exponential envelope': {
-			const MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
-			<div class="form-group"><input class="parameter form-control" id="envelope-width" placeholder="Ширина огибающей"></div>
-			<div class="form-group"><input class="parameter form-control" id="frequency" placeholder="Частота несущей"></div>
-			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>`;
+			const DEFAULT_AMPLITUDE = 1;
+			const DEFAULT_ENVELOPE_WIDTH = 1;
+			const DEFAULT_INITIAL_PHASE = 0;
+			let PART;
+			let MAIN_PARAMETERS_HTML;
+			if (signals.length == 0) {
+				PART = `<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="frequency" placeholder="fн"></div>`
+			}
+			else {
+				const DEFAULT_FREQUENCY = 0.5 * signal.frequency;
+				PART = `<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, ${0.5 * signal.frequency}]</label><input value=${DEFAULT_FREQUENCY} class="parameter form-control" id="frequency" placeholder="fн"></div>`
+			}
+			MAIN_PARAMETERS_HTML = `
+			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
+			<div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input value=${DEFAULT_ENVELOPE_WIDTH} class="parameter form-control" id="envelope-width" placeholder="tao"></div>
+			${PART}
+			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Balance envelope': {
-			const MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
-			<div class="form-group"><div class="form-group"><input class="parameter form-control" id="envelope-frequency" placeholder="Частота огибающей"></div>
-			<div class="form-group"><input class="parameter form-control" id="carrier-frequency" placeholder="Частота несущей"></div>
-			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>`
+			const DEFAULT_AMPLITUDE = 1;
+			const DEFAULT_ENVELOPE_FREQUENCY = 1;
+			const DEFAULT_INITIAL_PHASE = 0;
+			let PART;
+			let MAIN_PARAMETERS_HTML;
+			if (signals.length == 0) {
+				PART = '<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>'
+			}
+			else {
+				const DEFAULT_CARRIER_FREQUENCY = 0.5 * signal.frequency / 2;
+				PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${0.5 * signal.frequency}]</label><input value=${DEFAULT_CARRIER_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
+			}
+			MAIN_PARAMETERS_HTML = `
+			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
+			<div class="form-group"><label for="envelope-frequency">Частота огибающей (fо)</label><div class="form-group"><input value=${DEFAULT_ENVELOPE_FREQUENCY} class="parameter form-control" id="envelope-frequency" placeholder="fо"></div>
+			${PART}
+			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>`
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
 		case 'Tonal envelope': {
+			const DEFAULT_AMPLITUDE = 1;
+			const DEFAULT_ENVELOPE_FREQUENCY = 1;
+			const DEFAULT_INITIAL_PHASE = 0;
+			const DEFAULT_DEPTH_INDEX = 0.5;
+			let PART;
+			if (signals.length == 0) {
+				PART = '<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>'
+			}
+			else {
+				const DEFAULT_CARRIER_FREQUENCY = 0.5 * signal.frequency / 2;
+				PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${0.5 * signal.frequency}]</label><input value=${DEFAULT_CARRIER_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
+			}
 			const MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><input class="parameter form-control" id="amplitude" placeholder="Амплитуда"></div>
-			<div class="form-group"><input class="parameter form-control" id="envelope-frequency" placeholder="Частота огибающей"></div>
-			<div class="form-group"><input class="parameter form-control" id="carrier-frequency" placeholder="Частота несущей"></div>
-			<div class="form-group"><input class="parameter form-control" id="initial-phase" placeholder="Начальная фаза несущей"></div>
-			<div class="form-group"><input class="parameter form-control" id="depth-index" placeholder="Индекс глубины модуляции"></div>`
+			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
+			<div class="form-group"><label for="envelope-frequency">Частота огибающей (fо)</label><div class="form-group"><input value=${DEFAULT_ENVELOPE_FREQUENCY} class="parameter form-control" id="envelope-frequency" placeholder="fо"></div>
+			${PART}
+			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>
+			<div class="form-group"><label for="depth-inde">Глубина модуляции (m): m -> [0, 1]</label><input value=${DEFAULT_DEPTH_INDEX} class="parameter form-control" id="depth-index" placeholder="m"></div>`
 			PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
 			break;
 		}
@@ -288,6 +345,7 @@ $(document).on('click', '#create-model-btn', function () {
 		else {
 			signal = getSignal(signals, signalId);
 		}
+		console.log(signals)
 		signal.renderModel(modelType, parameters);
 	}
 })

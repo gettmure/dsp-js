@@ -130,7 +130,7 @@ export class Signal extends Source {
 	}
 
 	renderModel(type, parameters) {
-		if (this.channels.length == 0) {
+		if (this.channels.length == 0 && this.models.length == 0) {
 			this.#createButtons();
 		}
 		const modelIndex = this.channels.length + this.models.length;
