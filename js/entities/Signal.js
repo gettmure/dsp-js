@@ -31,7 +31,7 @@ export class Signal extends Source {
 			$('.signal-navigation-menu-container').append(CHANNELS_MENU_HTML);
 			$('#signal-navigation-menu').append(SIGNAL_BUTTON_HTML);
 			$('#signals-info-menu').append(SIGNAL_INFO_BUTTON_HTML);
-			$('#signal-choice').append(`<option class="signal-item" value="${this.id}" id="${this.id.match(/\d+/)[0]}">${this.name}</option>`)
+			$('.signal-choice').append(`<option class="signal-item" value="${this.id}" id="${this.id.match(/\d+/)[0]}">${this.name}</option>`)
 		}
 
 		this.#getModelData = (params, type) => {
@@ -84,6 +84,7 @@ export class Signal extends Source {
 				}
 				case 'Exponential envelope': {
 					modelFunction = (params, step) => {
+						step = step * this.period / 1000;
 						const amplitude = params[0];
 						const width = params[1];
 						const carrierFrequency = params[2];
@@ -94,6 +95,7 @@ export class Signal extends Source {
 				}
 				case 'Balance envelope': {
 					modelFunction = (params, step) => {
+						step = step * this.period / 1000;
 						const amplitude = params[0];
 						const envelopeFrequency = params[1];
 						const carrierFrequency = params[2];
@@ -104,6 +106,7 @@ export class Signal extends Source {
 				}
 				case 'Tonal envelope': {
 					modelFunction = (params, step) => {
+						step = step * this.period / 1000;
 						const amplitude = params[0];
 						const envelopeFrequency = params[1];
 						const carrierFrequency = params[2];
@@ -115,7 +118,7 @@ export class Signal extends Source {
 				}
 			}
 			for (let i = 0; i < this.measuresCount; i++) {
-				const value = modelFunction(params, (i + 1) * this.period / 1000);
+				const value = modelFunction(params, (i + 1));
 				data.push(value);
 			}
 			return data;

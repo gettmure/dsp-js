@@ -38,8 +38,8 @@
 								<button class="dropdown-item" id="open-file-btn">
 									<input id="file-input" accept=".txt" type="file" style="display: none;" />Открыть
 								</button>
-								<button class="btn dropdown-item" href="#"
-									style="white-space:normal;">Сохранить</button>
+								<button class="btn dropdown-item" id="save-file-btn" href="#" style="white-space:normal;"
+									data-toggle="modal" data-target="#save-modal">Сохранить</button>
 							</div>
 						</div>
 					</div>
@@ -55,8 +55,8 @@
 									Детерминированный сигнал
 								</button>
 
-								<button type="button" id="random-signal-btn" class="dropdown-item modelling-btn"
-									data-toggle="modal" data-target="#modelling-modal">
+								<button type="button" id="random-signal-btn" class="dropdown-item modelling-btn" data-toggle="modal"
+									data-target="#modelling-modal">
 									Случайный сигнал
 								</button>
 							</div>
@@ -87,18 +87,15 @@
 								Анализ
 							</a>
 							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-								<button class="btn dropdown-item" href="#"
-									style="white-space:normal;">Частотный</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Частотный</button>
 								<button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
 									корреляционный произвольных пар сигналов</button>
 								<button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
 									спектральный произвольных пар сигналов</button>
-								<button class="btn dropdown-item" href="#"
-									style="white-space:normal;">Частотно-временной анализ
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Частотно-временной анализ
 									сигналов с использованием
 									Фурье-спектрограмм</button>
-								<button class="btn dropdown-item" href="#"
-									style="white-space:normal;">Вейвлетограммы</button>
+								<button class="btn dropdown-item" href="#" style="white-space:normal;">Вейвлетограммы</button>
 							</div>
 						</div>
 					</div>
@@ -163,15 +160,13 @@
 							<div class="form-group">
 								<div id="parameters-container">
 									<div class="form-group">
-										<input class="parameter form-control" id="measures-count"
-											placeholder="Количество отсчётов">
+										<input class="parameter form-control" id="measures-count" placeholder="Количество отсчётов">
 									</div>
 									<div class="form-group">
 										<input class="parameter form-control" id="frequency" placeholder="Частота">
 									</div>
 									<div class="form-group">
-										<input class="parameter form-control" id="delay"
-											placeholder="Задержка импульса">
+										<input class="parameter form-control" id="delay" placeholder="Задержка импульса">
 									</div>
 								</div>
 							</div>
@@ -181,14 +176,48 @@
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">
 							Закрыть
 						</button>
-						<button type="button" class="btn btn-primary" data-dismiss="modal"
-							id="create-model-btn">Применить</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="create-model-btn">Применить</button>
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>
 
+	<div class="modal fade" id="save-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalCenterTitle">
+						Сохранить файл
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div id="options-container">
+						<div class="form-group">
+							<div class="form-group">
+								<label for="signal-choice">Выберите сигнал</label>
+								<select class="form-control signal-choice" id="save-signal"></select>
+							</div>
+							<div class="form-group" id="channels-checkbox">
+								<div class="form-check">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">
+						Закрыть
+					</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal" id="create-model-btn">Применить</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<div class="modal fade" id="signal-info-modal" tabindex="-1" role="dialog"
 		aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">

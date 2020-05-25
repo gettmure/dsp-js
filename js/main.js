@@ -2,7 +2,7 @@ import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
 import { Signal } from './entities/Signal.js';
 
-export let signals = [];
+let signals = [];
 let isOpened = false;
 
 $('#open-file-btn').click(function () {
@@ -68,7 +68,7 @@ $('#file-input').change(async function (event) {
 		return;
 	}
 	if (signals.length == 0) {
-		const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control" id="signal-choice"></select></div>'
+		const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control signal-choice" id="modelling-signal"></select></div>'
 		$('#options-container').before(SIGNALS_LIST_HTML);
 		$('#measures-count').remove();
 		$('#frequency').remove();
@@ -81,6 +81,31 @@ $('#file-input').change(async function (event) {
 			break;
 	};
 	signals[signals.length - 1].renderChannels();
+})
+
+$(document).on('click change', '#save-file-btn, #save-signal', function () {
+	const signalId = $('#save-signal').val();
+	const signal = getSignal(signals, signalId);
+	let channels = '';
+	if (signal.channels.length != 0) {
+		signal.channels.forEach((channel) => {
+			channels += `<div class="form-check">
+				<input class="form-check-input" type="checkbox" value="${channel.id}" id="${channel.name}-checkbox">
+				<label class="form-check-label" for="${channel.id}-checkbox">
+					${channel.name}
+				</label></div>`
+		})
+	}
+	if (signal.models.length != 0) {
+		signal.models.forEach((model) => {
+			channels += `<div class="form-check">
+			<input class="form-check-input" type="checkbox" value="${model.id}" id="${model.name}-checkbox">
+			<label class="form-check-label" for="${model.id}-checkbox">
+				${model.name}
+			</label></div>`
+		})
+	}
+	$('#channels-checkbox').html(channels);
 })
 
 $(document).on('click', '.channel-btn', function () {
@@ -144,7 +169,9 @@ $(document).on('click', '.modelling-btn', function () {
 	const buttonId = $(this).attr('id');
 	switch (buttonId) {
 		case 'determinated-signal-btn': {
-			let DEFAULT_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
+			let defaultDelay;
+			signals.length == 0 ? defaultDelay = 'N' : defaultDelay = signals[0].measuresCount;
+			const DEFAULT_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, ${defaultDelay}]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
 			const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Delayed single impulse">Задержанный единичный импульс</option>
 				<option value="Delayed single bounce">Задержанный единичный скачок</option>
@@ -163,11 +190,13 @@ $(document).on('click', '.modelling-btn', function () {
 		}
 
 		case 'random-signal-btn': {
-			let DEFAULT_PARAMETERS_HTML = `
-			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input class="parameter form-control" id="amplitude" placeholder="a"></div>
-			<div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input class="parameter form-control" id="envelope-width" placeholder="tao"></div>
-			<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="frequency" placeholder="fн"></div>
-			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
+			let defaultCarrierFrequency;
+			signals.length == 0 ? defaultCarrierFrequency = '0.5*f' : defaultCarrierFrequency = 0.5 * signals[0].frequency;
+			const DEFAULT_PARAMETERS_HTML = `
+			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value="1" class="parameter form-control" id="amplitude" placeholder="a"></div>
+			<div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input value="1" class="parameter form-control" id="envelope-width" placeholder="tao"></div>
+			<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, ${defaultCarrierFrequency}]</label><input class="parameter form-control" id="frequency" placeholder="fн"></div>
+			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value="0" class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
 			const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Exponential envelope">Экспоненциальная огибающая</option>
 				<option value="Balance envelope">Балансная огибающая</option>
@@ -184,7 +213,7 @@ $(document).on('click', '.modelling-btn', function () {
 })
 
 $(document).on('change', '#model-type', function () {
-	const signalId = $('#signal-choice').val();
+	const signalId = $('#modelling-signal').val();
 	const signal = getSignal(signals, signalId);
 	const type = $(this).val();
 	const parametersContainer = $('#parameters-container');
@@ -321,7 +350,7 @@ function arraysAreEqual(arr1, arr2) {
 
 $(document).on('click', '#create-model-btn', function () {
 	const modelType = $('#model-type').val();
-	const signalId = $('#signal-choice').val();
+	const signalId = $('.signal-choice').val();
 	let parameters = $('.parameter').map(function () {
 		return parseFloat($(this).val());
 	}).get();
@@ -337,7 +366,7 @@ $(document).on('click', '#create-model-btn', function () {
 			const unixtime = Date.parse('2000-01-01 00:00:00.000 GMT');
 			signal = new Signal(`Пользовательский сигнал`, 1, measuresCount, frequency, unixtime, `signal${signals.length}`);
 			signals.push(signal);
-			const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control" id="signal-choice"></select></div>'
+			const SIGNALS_LIST_HTML = '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control signal-choice"></select></div>'
 			$('#options-container').before(SIGNALS_LIST_HTML);
 			$('#measures-count').remove();
 			$('#frequency').remove();
@@ -345,7 +374,6 @@ $(document).on('click', '#create-model-btn', function () {
 		else {
 			signal = getSignal(signals, signalId);
 		}
-		console.log(signals)
 		signal.renderModel(modelType, parameters);
 	}
 })
