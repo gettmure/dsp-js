@@ -5,7 +5,7 @@ let channelIndex = 0;
 
 export function parseDateTime(date) {
 	const dateElements = date.split(/\D/);
-	return new Date(dateElements[0], dateElements[1] - 1, dateElements[2], dateElements[3], dateElements[4], dateElements[5]);
+	return new Date(dateElements[0], dateElements[1] - 1, dateElements[2], dateElements[4], dateElements[5], dateElements[6], dateElements[7]);
 }
 
 export function parseTxtFile(signalName, fileContent, signalIndex) {

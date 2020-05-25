@@ -32,9 +32,9 @@ function getName(filename) {
 	return parts[0];
 }
 
-function getSignal(signals, id) {
-	return signals.find((signal) => {
-		return signal.id == id;
+function findElementById(elements, id) {
+	return elements.find((element) => {
+		return element.id == id;
 	})
 }
 
@@ -85,27 +85,71 @@ $('#file-input').change(async function (event) {
 
 $(document).on('click change', '#save-file-btn, #save-signal', function () {
 	const signalId = $('#save-signal').val();
-	const signal = getSignal(signals, signalId);
-	let channels = '';
-	if (signal.channels.length != 0) {
-		signal.channels.forEach((channel) => {
-			channels += `<div class="form-check">
-				<input class="form-check-input" type="checkbox" value="${channel.id}" id="${channel.name}-checkbox">
-				<label class="form-check-label" for="${channel.id}-checkbox">
-					${channel.name}
-				</label></div>`
-		})
+	const signal = findElementById(signals, signalId);
+	if (signal) {
+		const getChannelCheckboxHtml = (channel) => {
+			return `<div class="form-check">
+							 <input class="form-check-input" type="checkbox" value="${channel.id}" id="${channel.name}-checkbox">
+							 <label class="form-check-label" for="${channel.name}-checkbox">
+								 ${channel.name}
+							 </label>
+						 </div>`
+		}
+		let channels = '';
+		if (signal.channels.length != 0) {
+			signal.channels.forEach((channel) => {
+				channels += getChannelCheckboxHtml(channel)
+			})
+		}
+		if (signal.models.length != 0) {
+			signal.models.forEach((model) => {
+				channels += getChannelCheckboxHtml(model);
+			})
+		}
+		$('#channels-checkbox').html(channels);
 	}
-	if (signal.models.length != 0) {
-		signal.models.forEach((model) => {
-			channels += `<div class="form-check">
-			<input class="form-check-input" type="checkbox" value="${model.id}" id="${model.name}-checkbox">
-			<label class="form-check-label" for="${model.id}-checkbox">
-				${model.name}
-			</label></div>`
-		})
+})
+
+function getOutputData() {
+	let channels = [];
+	let valuesString = '';
+	const signalId = $('#save-signal').val();
+	const signal = findElementById(signals, signalId);
+	const date = new Date(signal.recordingTime);
+	const sources = Array.from(document.getElementsByClassName('form-check-input')).filter(checkbox => checkbox.checked).map(checkbox => ({
+		id: checkbox.value,
+		name: checkbox.id.split('-')[0]
+	}));
+	sources.forEach((sourceObject) => {
+		const isModel = (sourceObject.id.match(/model/gm) != null);
+		let source;
+		if (isModel) {
+			source = findElementById(signal.models, sourceObject.id)
+		}
+		else {
+			source = findElementById(signal.channels, sourceObject.id)
+		}
+		channels.push(source);
+	})
+	for (let i = 0; i < signal.measuresCount; i++) {
+		for (let j = 0; j < channels.length; j++) {
+			valuesString += `${channels[j].values[i]} `;
+		}
+		valuesString += '\n';
 	}
-	$('#channels-checkbox').html(channels);
+	let data = `${signal.channelsCount}\n${signal.measuresCount}\n${signal.frequency}\n${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}\n${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}\n${sources.map(source => source.name).join(';')}\n${valuesString}`
+	return data;
+}
+
+$(document).on('click', '#save-file', function () {
+	const outputData = getOutputData();
+	const fileName = $('#file-name').val();
+	let anchor = document.createElement('a');
+	const blob = new Blob([outputData], { type: 'text/plain' });
+	anchor.download = fileName;
+	anchor.href = (window.webkitURL || window.URL).createObjectURL(blob);
+	anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+	anchor.click();
 })
 
 $(document).on('click', '.channel-btn', function () {
@@ -114,7 +158,7 @@ $(document).on('click', '.channel-btn', function () {
 	const signalId = $(clickedButton).parent().attr('id');
 	const chartId = $(clickedButton).attr('id');
 	const isModel = (chartId.match(/model/gm) != null);
-	const signal = getSignal(signals, signalId);
+	const signal = findElementById(signals, signalId);
 	if (isModel) {
 		channel = signal.models.find((model) => { return model.id == chartId });
 	}
@@ -137,7 +181,7 @@ $('#show-signal-navigation-menu-btn').click(function () {
 
 $(document).on('click', '.signal-info-btn', function () {
 	const signalId = $(this).attr('id').split('-')[0];
-	const signal = getSignal(signals, signalId);
+	const signal = findElementById(signals, signalId);
 	showSignalInfo(signal);
 })
 
@@ -167,11 +211,12 @@ $(document).on('click', '#return-btn', function () {
 $(document).on('click', '.modelling-btn', function () {
 	const ADDITIONAL_PARAMETERS_HTML = '<div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>'
 	const buttonId = $(this).attr('id');
+	let DEFAULT_PARAMETERS_HTML;
 	switch (buttonId) {
 		case 'determinated-signal-btn': {
 			let defaultDelay;
 			signals.length == 0 ? defaultDelay = 'N' : defaultDelay = signals[0].measuresCount;
-			const DEFAULT_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, ${defaultDelay}]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
+			DEFAULT_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, ${defaultDelay}]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
 			const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Delayed single impulse">Задержанный единичный импульс</option>
 				<option value="Delayed single bounce">Задержанный единичный скачок</option>
@@ -182,39 +227,34 @@ $(document).on('click', '.modelling-btn', function () {
 				<option value="Meander">"Меандр" (прямоугольная решетка)</option>
 				<option value="Saw">“Пила"</option>`;
 			$('#model-type').html(MODEL_TYPE_ITEMS_HTML);
-			if (signals.length == 0) {
-				DEFAULT_PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + DEFAULT_PARAMETERS_HTML;
-			}
-			$('#parameters-container').html(DEFAULT_PARAMETERS_HTML);
 			break;
 		}
-
 		case 'random-signal-btn': {
 			let defaultCarrierFrequency;
 			signals.length == 0 ? defaultCarrierFrequency = '0.5*f' : defaultCarrierFrequency = 0.5 * signals[0].frequency;
-			const DEFAULT_PARAMETERS_HTML = `
+			DEFAULT_PARAMETERS_HTML = `
 			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value="1" class="parameter form-control" id="amplitude" placeholder="a"></div>
 			<div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input value="1" class="parameter form-control" id="envelope-width" placeholder="tao"></div>
-			<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, ${defaultCarrierFrequency}]</label><input class="parameter form-control" id="frequency" placeholder="fн"></div>
+			<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${defaultCarrierFrequency}]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>
 			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value="0" class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
 			const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Exponential envelope">Экспоненциальная огибающая</option>
 				<option value="Balance envelope">Балансная огибающая</option>
 				<option value="Tonal envelope">Тональная огибающая</option>
-			`;
+			`
 			$('#model-type').html(MODEL_TYPE_ITEMS_HTML);
-			if (signals.length == 0) {
-				DEFAULT_PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + DEFAULT_PARAMETERS_HTML;
-			}
-			$('#parameters-container').html(DEFAULT_PARAMETERS_HTML);
 			break;
 		}
 	}
+	if (signals.length == 0) {
+		DEFAULT_PARAMETERS_HTML = ADDITIONAL_PARAMETERS_HTML + DEFAULT_PARAMETERS_HTML;
+	}
+	$('#parameters-container').html(DEFAULT_PARAMETERS_HTML);
 })
 
 $(document).on('change', '#model-type', function () {
 	const signalId = $('#modelling-signal').val();
-	const signal = getSignal(signals, signalId);
+	const signal = findElementById(signals, signalId);
 	const type = $(this).val();
 	const parametersContainer = $('#parameters-container');
 	let PARAMETERS_HTML;
@@ -276,11 +316,11 @@ $(document).on('change', '#model-type', function () {
 			let PART;
 			let MAIN_PARAMETERS_HTML;
 			if (signals.length == 0) {
-				PART = `<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="frequency" placeholder="fн"></div>`
+				PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`
 			}
 			else {
 				const DEFAULT_FREQUENCY = 0.5 * signal.frequency;
-				PART = `<div class="form-group"><label for="frequency">Частота несущей (fн): fн -> [0, ${0.5 * signal.frequency}]</label><input value=${DEFAULT_FREQUENCY} class="parameter form-control" id="frequency" placeholder="fн"></div>`
+				PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${0.5 * signal.frequency}]</label><input value=${DEFAULT_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`
 			}
 			MAIN_PARAMETERS_HTML = `
 			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
@@ -372,7 +412,7 @@ $(document).on('click', '#create-model-btn', function () {
 			$('#frequency').remove();
 		}
 		else {
-			signal = getSignal(signals, signalId);
+			signal = findElementById(signals, signalId);
 		}
 		signal.renderModel(modelType, parameters);
 	}
