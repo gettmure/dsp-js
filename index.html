@@ -52,7 +52,12 @@
 							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
 								<button type="button" id="determinated-signal-btn" class="dropdown-item modelling-btn"
 									data-toggle="modal" data-target="#modelling-modal">
-									Детерминированный сигнал
+									Дискретный сигнал
+								</button>
+
+								<button type="button" id="uninterrupted-signal-btn" class="dropdown-item modelling-btn" data-toggle="modal"
+									data-target="#modelling-modal">
+									Непрерывный сигнал
 								</button>
 
 								<button type="button" id="random-signal-btn" class="dropdown-item modelling-btn" data-toggle="modal"
@@ -128,7 +133,7 @@
 	</header>
 
 	<div class="signal-navigation-menu-container">
-		<div id="show-signal-navigation-menu-btn"> &#60 </div>
+		<div id="show-signal-navigation-menu-btn">&#60</div>
 		<ul id="signal-navigation-menu">
 		</ul>
 		<button type="button" class="container-fluid btn btn-info" id="return-btn" aria-haspopup="true"
@@ -200,7 +205,7 @@
 						<div class="form-group">
 							<div class="form-group">
 								<label for="file-name">Введите название файла</label>
-								<input class="parameter form-control" id="file-name">
+								<input class="form-control" id="file-name">
 							</div>
 							<div class="form-group">
 								<label for="signal-choice">Выберите сигнал</label>
