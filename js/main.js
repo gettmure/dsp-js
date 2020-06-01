@@ -22,6 +22,12 @@ export function getRandomColor() {
   return `#${Math.floor(Math.random() * COLORS_COUNT).toString(16)}`;
 }
 
+export function findElementById(elements, id) {
+  return elements.find((element) => {
+    return element.id == id;
+  });
+}
+
 function getExtension(filename) {
   let parts = filename.split(".");
   return parts[parts.length - 1];
@@ -30,12 +36,6 @@ function getExtension(filename) {
 function getName(filename) {
   let parts = filename.split(".");
   return parts[0];
-}
-
-function findElementById(elements, id) {
-  return elements.find((element) => {
-    return element.id == id;
-  });
 }
 
 function readTxtFile(file) {
@@ -53,63 +53,21 @@ function readTxtFile(file) {
   });
 }
 
-async function getDataFromTxt(file) {
-  try {
-    const fileContent = await readTxtFile(file);
-    const result = parseTxtFile(file.name, fileContent, signals.length);
-    return result;
-  } catch (e) {
-    console.log(e);
-  }
+function createSuperpositionButtons(id) {
+  const signal = findElementById(signals, id);
+  let SOURCES_HTML = "";
+  signal.channels.forEach((channel) => {
+    SOURCES_HTML += `
+    <div class="form-group"><label for="${channel.id}-coef">${channel.name}</label>
+    <input class="coef form-control" id="${channel.id}-coef" placeholder=""></div>`;
+  });
+  signal.models.forEach((model) => {
+    SOURCES_HTML += `
+    <div class="form-group"><label for="${model.id}-coef">${model.name}</label>
+    <input class="coef form-control" id="${model.id}-coef" placeholder=""></div>`;
+  });
+  $("#superposition-channels-container").html(SOURCES_HTML);
 }
-$("#file-input").change(async function (event) {
-  const file = event.target.files[0];
-  if (!file) {
-    return;
-  }
-  if (signals.length == 0) {
-    const SIGNALS_LIST_HTML =
-      '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control signal-choice" id="modelling-signal"></select></div>';
-    $("#options-container").before(SIGNALS_LIST_HTML);
-    $("#measures-count").remove();
-    $("#frequency").remove();
-  }
-
-  switch (getExtension(file.name)) {
-    case "txt":
-      const data = await getDataFromTxt(file);
-      signals.push(data);
-      break;
-  }
-  signals[signals.length - 1].renderChannels();
-});
-
-$(document).on("click change", "#save-file-btn, #save-signal", function () {
-  const signalId = $("#save-signal").val();
-  const signal = findElementById(signals, signalId);
-  if (signal) {
-    const getChannelCheckboxHtml = (channel) => {
-      return `<div class="form-check">
-							 <input class="form-check-input" type="checkbox" value="${channel.id}" id="${channel.name}-checkbox">
-							 <label class="form-check-label" for="${channel.name}-checkbox">
-								 ${channel.name}
-							 </label>
-						 </div>`;
-    };
-    let channels = "";
-    if (signal.channels.length != 0) {
-      signal.channels.forEach((channel) => {
-        channels += getChannelCheckboxHtml(channel);
-      });
-    }
-    if (signal.models.length != 0) {
-      signal.models.forEach((model) => {
-        channels += getChannelCheckboxHtml(model);
-      });
-    }
-    $("#channels-checkbox").html(channels);
-  }
-});
 
 function getOutputData() {
   let channels = [];
@@ -145,13 +103,85 @@ function getOutputData() {
   }
   const day = date[0];
   const time = date[1].slice(0, -1);
-  let data = `${savingChannelsCount}\n${signal.measuresCount}\n${
-    signal.frequency
-  }\n${day}\n${time}\n${sources
-    .map((source) => source.name)
-    .join(";")}\n${valuesString}`;
+  let data = `
+    ${savingChannelsCount}\n
+    ${signal.measuresCount}\n
+    ${signal.frequency}\n
+    ${day}\n
+    ${time}\n
+    ${sources.map((source) => source.name).join(";")}\n${valuesString}`;
   return data;
 }
+
+function arraysAreEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function getDataFromTxt(file) {
+  try {
+    const fileContent = await readTxtFile(file);
+    const result = parseTxtFile(file.name, fileContent, signals.length);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+}
+$("#file-input").change(async function (event) {
+  const file = event.target.files[0];
+  if (!file) {
+    return;
+  }
+  if (signals.length == 0) {
+    const SIGNALS_LIST_HTML =
+      '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control signal-choice" id="modelling-signal"></select></div>';
+    $("#options-container").before(SIGNALS_LIST_HTML);
+    $("#measures-count").remove();
+    $("#frequency").remove();
+  }
+  switch (getExtension(file.name)) {
+    case "txt":
+      const data = await getDataFromTxt(file);
+      signals.push(data);
+      break;
+  }
+  signals[signals.length - 1].renderChannels();
+});
+
+$(document).on("click change", "#save-file-btn, #save-signal", function () {
+  const signalId = $("#save-signal").val();
+  const signal = findElementById(signals, signalId);
+  if (signal) {
+    const getChannelCheckboxHtml = (channel) => {
+      return `
+        <div class="form-check">
+				  <input class="form-check-input" type="checkbox" value="${channel.id}" id="${channel.name}-checkbox">
+					<label class="form-check-label" for="${channel.name}-checkbox">
+					 ${channel.name}
+					</label>
+				</div>`;
+    };
+    let channels = "";
+    if (signal.channels.length != 0) {
+      signal.channels.forEach((channel) => {
+        channels += getChannelCheckboxHtml(channel);
+      });
+    }
+    if (signal.models.length != 0) {
+      signal.models.forEach((model) => {
+        channels += getChannelCheckboxHtml(model);
+      });
+    }
+    $("#channels-checkbox").html(channels);
+  }
+});
 
 $(document).on("click", "#save-file", function () {
   const outputData = getOutputData();
@@ -169,22 +199,23 @@ $(document).on("click", "#save-file", function () {
 });
 
 $(document).on("click", ".channel-btn", function () {
-  let channel;
+  let source;
   const clickedButton = this;
   const signalId = $(clickedButton).parent().attr("id");
   const chartId = $(clickedButton).attr("id");
   const isModel = chartId.match(/model/gm) != null;
+  const isSuperposition = chartId.match(/superposition/gm) != null;
   const signal = findElementById(signals, signalId);
   if (isModel) {
-    channel = signal.models.find((model) => {
-      return model.id == chartId;
-    });
+    source = findElementById(signal.models, chartId);
   } else {
-    channel = signal.channels.find((channel) => {
-      return channel.id == chartId;
-    });
+    if (isSuperposition) {
+      source = findElementById(signal.superpositions, chartId);
+    } else {
+      source = findElementById(signal.channels, chartId);
+    }
   }
-  channel.showChart();
+  source.showChart();
 });
 
 $("#show-signal-navigation-menu-btn").click(function () {
@@ -228,8 +259,8 @@ $(document).on("click", "#return-btn", function () {
 });
 
 $(document).on("click", ".modelling-btn", function () {
-  const ADDITIONAL_PARAMETERS_HTML =
-    '<div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>';
+  const ADDITIONAL_PARAMETERS_HTML = `
+    <div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>`;
   const buttonId = $(this).attr("id");
   let DEFAULT_PARAMETERS_HTML;
   switch (buttonId) {
@@ -238,7 +269,8 @@ $(document).on("click", ".modelling-btn", function () {
       signals.length == 0
         ? (defaultDelay = "N")
         : (defaultDelay = signals[0].measuresCount);
-      DEFAULT_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, ${defaultDelay}]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
+      DEFAULT_PARAMETERS_HTML = `
+        <label for="delay">Задержка импульса (N0): [1, ${defaultDelay}]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
       const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Delayed single impulse">Задержанный единичный импульс</option>
 				<option value="Delayed single bounce">Задержанный единичный скачок</option>
@@ -257,10 +289,10 @@ $(document).on("click", ".modelling-btn", function () {
         ? (defaultCarrierFrequency = "0.5*f")
         : (defaultCarrierFrequency = 0.5 * signals[0].frequency);
       DEFAULT_PARAMETERS_HTML = `
-			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value="1" class="parameter form-control" id="amplitude" placeholder="a"></div>
-			<div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input value="1" class="parameter form-control" id="envelope-width" placeholder="tao"></div>
-			<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${defaultCarrierFrequency}]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>
-			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value="0" class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
+			  <div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value="1" class="parameter form-control" id="amplitude" placeholder="a"></div>
+			  <div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input value="1" class="parameter form-control" id="envelope-width" placeholder="tao"></div>
+			  <div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${defaultCarrierFrequency}]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>
+			  <div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value="0" class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
       const MODEL_TYPE_ITEMS_HTML = `
 				<option value="Exponential envelope">Экспоненциальная огибающая</option>
 				<option value="Balance envelope">Балансная огибающая</option>
@@ -271,7 +303,7 @@ $(document).on("click", ".modelling-btn", function () {
     }
     case "random-signal-btn": {
       DEFAULT_PARAMETERS_HTML = `
-			<div class="form-group"><label for="interval">Интервал [a, b]</label><input class="parameter form-control set" id="interval" placeholder="[a, b]"></div>`;
+			  <div class="form-group"><label for="interval">Интервал [a, b]</label><input class="parameter form-control set" id="interval" placeholder="[a, b]"></div>`;
       const MODEL_TYPE_ITEMS_HTML = `
 				<option value="White noise (interval)">Сигнал белого шума (равномерное распределение)</option>
 				<option value="White noise (normal law)">Сигнал белого шума (нормальный закон распределения)</option>
@@ -288,25 +320,58 @@ $(document).on("click", ".modelling-btn", function () {
   $("#parameters-container").html(DEFAULT_PARAMETERS_HTML);
 });
 
+$(document).on("click", "#superposition-btn", function () {
+  if (signals.length != 0) {
+    const signalId = $("#superposition-signal").val();
+    createSuperpositionButtons(signalId);
+  }
+});
+
+$(document).on("change", "#superposition-signal", function () {
+  const signalId = $(this).val();
+  createSuperpositionButtons(signalId);
+});
+
+$(document).on("click", "#create-superposition-btn", function () {
+  const signalId = $(".signal-choice").val();
+  const signal = findElementById(signals, signalId);
+  const selectedSources = Array.from(document.getElementsByClassName("coef"))
+    .filter((element) => {
+      return element.value != "";
+    })
+    .map((element) => {
+      const splittedId = element.id.split("-");
+      return {
+        id:
+          element.id.match(/model/gm) == null
+            ? splittedId[0]
+            : `${splittedId[0]}-${splittedId[1]}`,
+        value: parseFloat(element.value),
+      };
+    });
+  signal.renderSuperposition(selectedSources);
+});
+
 $(document).on("change", "#model-type", function () {
   const signalId = $("#modelling-signal").val();
   const signal = findElementById(signals, signalId);
   const type = $(this).val();
   const parametersContainer = $("#parameters-container");
   let PARAMETERS_HTML;
-  const ADDITIONAL_PARAMETERS_HTML =
-    '<div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>';
-
+  const ADDITIONAL_PARAMETERS_HTML = `
+    <div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>`;
   switch (type) {
     case "Delayed single impulse": {
       let MAIN_PARAMETERS_HTML;
       if (signals.length == 0) {
-        MAIN_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
+        MAIN_PARAMETERS_HTML = `
+          <label for="delay">Задержка импульса (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
       } else {
         const DEFAULT_DELAY = signal.measuresCount / 2;
-        MAIN_PARAMETERS_HTML = `<label for="delay">Задержка импульса (N0): [1, ${
-          signal != undefined ? signal.measuresCount : "N"
-        }]</label><input class="parameter form-control" id="delay" value=${DEFAULT_DELAY} placeholder="N0">`;
+        MAIN_PARAMETERS_HTML = `
+          <label for="delay">Задержка импульса (N0): [1, ${
+            signal != undefined ? signal.measuresCount : "N"
+          }]</label><input class="parameter form-control" id="delay" value=${DEFAULT_DELAY} placeholder="N0">`;
       }
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
@@ -314,17 +379,20 @@ $(document).on("change", "#model-type", function () {
     case "Delayed single bounce": {
       let MAIN_PARAMETERS_HTML;
       if (signals.length == 0) {
-        MAIN_PARAMETERS_HTML = `<label for="delay">Задержка скачка (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
+        MAIN_PARAMETERS_HTML = `
+          <label for="delay">Задержка скачка (N0): [1, N]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
       } else {
         const DEFAULT_DELAY = signal.measuresCount / 2;
-        MAIN_PARAMETERS_HTML = `<label for="delay">Задержка скачка (N0): [1, ${signal.measuresCount}]</label><input class="parameter form-control" id="delay" value=${DEFAULT_DELAY} placeholder="N0">`;
+        MAIN_PARAMETERS_HTML = `
+          <label for="delay">Задержка скачка (N0): [1, ${signal.measuresCount}]</label><input class="parameter form-control" id="delay" value=${DEFAULT_DELAY} placeholder="N0">`;
       }
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
     case "Decreasing discretized exponent": {
       const DEFAULT_BASE = 0.5;
-      const MAIN_PARAMETERS_HTML = `<label for="base">Основание степени (a): a -> (0, 1)</label><input value=${DEFAULT_BASE} class="parameter form-control" id="base" placeholder="a">`;
+      const MAIN_PARAMETERS_HTML = `
+        <label for="base">Основание степени (a): a -> (0, 1)</label><input value=${DEFAULT_BASE} class="parameter form-control" id="base" placeholder="a">`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
@@ -342,7 +410,8 @@ $(document).on("change", "#model-type", function () {
     case "Meander":
     case "Saw": {
       const DEFAULT_PERIOD = 5;
-      const MAIN_PARAMETERS_HTML = `<label for="period">Период (L)</label><input value=${DEFAULT_PERIOD} class="parameter form-control" id="period" placeholder="L">`;
+      const MAIN_PARAMETERS_HTML = `
+        <label for="period">Период (L)</label><input value=${DEFAULT_PERIOD} class="parameter form-control" id="period" placeholder="L">`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
@@ -353,18 +422,21 @@ $(document).on("change", "#model-type", function () {
       let PART;
       let MAIN_PARAMETERS_HTML;
       if (signals.length == 0) {
-        PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
+        PART = `
+          <div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
       } else {
         const DEFAULT_FREQUENCY = 0.5 * signal.frequency;
-        PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${
-          0.5 * signal.frequency
-        }]</label><input value=${DEFAULT_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
+        PART = `
+          <div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${
+            0.5 * signal.frequency
+          }]
+          </label><input value=${DEFAULT_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
       }
       MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
-			<div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input value=${DEFAULT_ENVELOPE_WIDTH} class="parameter form-control" id="envelope-width" placeholder="tao"></div>
-			${PART}
-			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
+			  <div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
+			  <div class="form-group"><label for="envelope-width">Ширина огибающей (tao)</label><input value=${DEFAULT_ENVELOPE_WIDTH} class="parameter form-control" id="envelope-width" placeholder="tao"></div>
+			  ${PART}
+			  <div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
@@ -375,19 +447,21 @@ $(document).on("change", "#model-type", function () {
       let PART;
       let MAIN_PARAMETERS_HTML;
       if (signals.length == 0) {
-        PART =
-          '<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>';
+        PART = `
+          <div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
       } else {
         const DEFAULT_CARRIER_FREQUENCY = (0.5 * signal.frequency) / 2;
-        PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${
-          0.5 * signal.frequency
-        }]</label><input value=${DEFAULT_CARRIER_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
+        PART = `
+          <div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${
+            0.5 * signal.frequency
+          }]
+          </label><input value=${DEFAULT_CARRIER_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
       }
       MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
-			<div class="form-group"><label for="envelope-frequency">Частота огибающей (fо)</label><div class="form-group"><input value=${DEFAULT_ENVELOPE_FREQUENCY} class="parameter form-control" id="envelope-frequency" placeholder="fо"></div>
-			${PART}
-			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
+			  <div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
+			  <div class="form-group"><label for="envelope-frequency">Частота огибающей (fо)</label><div class="form-group"><input value=${DEFAULT_ENVELOPE_FREQUENCY} class="parameter form-control" id="envelope-frequency" placeholder="fо"></div>
+			  ${PART}
+			  <div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
@@ -402,40 +476,42 @@ $(document).on("change", "#model-type", function () {
           '<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, 0.5*f]</label><input class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>';
       } else {
         const DEFAULT_CARRIER_FREQUENCY = (0.5 * signal.frequency) / 2;
-        PART = `<div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${
-          0.5 * signal.frequency
-        }]</label><input value=${DEFAULT_CARRIER_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
+        PART = `
+          <div class="form-group"><label for="carrier-frequency">Частота несущей (fн): fн -> [0, ${
+            0.5 * signal.frequency
+          }]
+          </label><input value=${DEFAULT_CARRIER_FREQUENCY} class="parameter form-control" id="carrier-frequency" placeholder="fн"></div>`;
       }
       const MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
-			<div class="form-group"><label for="envelope-frequency">Частота огибающей (fо)</label><div class="form-group"><input value=${DEFAULT_ENVELOPE_FREQUENCY} class="parameter form-control" id="envelope-frequency" placeholder="fо"></div>
-			${PART}
-			<div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>
-			<div class="form-group"><label for="depth-inde">Глубина модуляции (m): m -> [0, 1]</label><input value=${DEFAULT_DEPTH_INDEX} class="parameter form-control" id="depth-index" placeholder="m"></div>`;
+			  <div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value=${DEFAULT_AMPLITUDE} class="parameter form-control" id="amplitude" placeholder="a"></div>
+			  <div class="form-group"><label for="envelope-frequency">Частота огибающей (fо)</label><div class="form-group"><input value=${DEFAULT_ENVELOPE_FREQUENCY} class="parameter form-control" id="envelope-frequency" placeholder="fо"></div>
+			  ${PART}
+			  <div class="form-group"><label for="initial-phase">Начальная фаза несущей (phi)</label><input value=${DEFAULT_INITIAL_PHASE} class="parameter form-control" id="initial-phase" placeholder="phi"></div>
+			  <div class="form-group"><label for="depth-inde">Глубина модуляции (m): m -> [0, 1]</label><input value=${DEFAULT_DEPTH_INDEX} class="parameter form-control" id="depth-index" placeholder="m"></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
 
     case "White noise (interval)": {
       const MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><label for="interval">Интервал [a, b]</label><input class="parameter form-control set" id="interval" placeholder="[a, b]"></div>`;
+			  <div class="form-group"><label for="interval">Интервал [a, b]</label><input class="parameter form-control set" id="interval" placeholder="[a, b]"></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
 
     case "White noise (normal law)": {
       const MAIN_PARAMETERS_HTML = `
-			<div class="form-group"><label for="alpha">Среднее (альфа)</label><input class="parameter form-control" id="alpha" placeholder="a"></div>
-			<div class="form-group"><label for="sigma">Дисперсия (сигма^2)</label><input class="parameter form-control" id="sigma" placeholder="Сигма^2"></div>`;
+			  <div class="form-group"><label for="alpha">Среднее (альфа)</label><input class="parameter form-control" id="alpha" placeholder="a"></div>
+			  <div class="form-group"><label for="sigma">Дисперсия (сигма^2)</label><input class="parameter form-control" id="sigma" placeholder="Сигма^2"></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
 
     case "АРСС": {
       const MAIN_PARAMETERS_HTML = `
-      <div class="form-group"><label for="sigma">Дисперсия (сигма^2)</label><input class="parameter form-control" id="sigma" placeholder="Сигма^2"></div>
-			<div class="form-group"><label for="a-coef">Множество коэффициентов a</label><input class="parameter form-control set" id="a-coef" placeholder="1, 2, ..."></div>
-			<div class="form-group"><label for="b-coef">Множество коэффициентов b</label><input class="parameter form-control set" id="b-coef" placeholder="1, 2, ..."></div>`;
+        <div class="form-group"><label for="sigma">Дисперсия (сигма^2)</label><input class="parameter form-control" id="sigma" placeholder="Сигма^2"></div>
+			  <div class="form-group"><label for="a-coef">Множество коэффициентов a</label><input class="parameter form-control set" id="a-coef" placeholder="1, 2, ..."></div>
+			  <div class="form-group"><label for="b-coef">Множество коэффициентов b</label><input class="parameter form-control set" id="b-coef" placeholder="1, 2, ..."></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
@@ -445,18 +521,6 @@ $(document).on("change", "#model-type", function () {
   }
   parametersContainer.html(PARAMETERS_HTML);
 });
-
-function arraysAreEqual(arr1, arr2) {
-  if (arr1.length !== arr2.length) {
-    return false;
-  }
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) {
-      return false;
-    }
-  }
-  return true;
-}
 
 $(document).on("click", "#create-model-btn", function () {
   const modelType = $("#model-type").val();

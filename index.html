@@ -54,15 +54,17 @@
 									data-toggle="modal" data-target="#modelling-modal">
 									Дискретный сигнал
 								</button>
-
 								<button type="button" id="uninterrupted-signal-btn" class="dropdown-item modelling-btn" data-toggle="modal"
 									data-target="#modelling-modal">
 									Непрерывный сигнал
 								</button>
-
 								<button type="button" id="random-signal-btn" class="dropdown-item modelling-btn" data-toggle="modal"
 									data-target="#modelling-modal">
 									Случайный сигнал
+								</button>
+								<button type="button" id="superposition-btn" class="dropdown-item modelling-btn" data-toggle="modal"
+									data-target="#superposition-modal">
+									Суперпозиция
 								</button>
 							</div>
 						</div>
@@ -223,6 +225,43 @@
 					</button>
 					<button type="button" class="btn btn-primary" data-dismiss="modal" id="save-file">Применить</button>
 				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="superposition-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalCenterTitle">
+						Суперпозиция сигнала
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="superposition-form">
+					<div class="modal-body">
+						<div id="options-container">
+							<div class="form-group">
+								<label for="signal-choice">Выберите сигнал</label>
+								<select class="form-control signal-choice" id="superposition-signal">
+								</select>
+							</div>
+							<div class="form-group">
+								<div id="superposition-channels-container">
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">
+							Закрыть
+						</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="create-superposition-btn">Применить</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	</div>

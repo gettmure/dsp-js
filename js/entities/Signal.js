@@ -1,10 +1,11 @@
 import { Source } from "./Source.js";
 import { Model } from "./Model.js";
+import { findElementById } from "../main.js";
+import { Channel } from "./Channel.js";
 
 export class Signal extends Source {
   #createButtons;
   #getModelData;
-
   constructor(name, channelsCount, measuresCount, frequency, startTime, id) {
     super(measuresCount, frequency, startTime, id);
     this.name = name;
@@ -155,7 +156,6 @@ export class Signal extends Source {
         }
         case "АРСС": {
           modelFunction = (params, step) => {
-            console.log(params);
             const sigma = Math.sqrt(params[0]);
             const aCoefs = params[1];
             const bCoefs = params[2];
@@ -218,5 +218,46 @@ export class Signal extends Source {
     this.models.push(model);
     this.channelsCount++;
     model.renderChart(this.models);
+  }
+
+  renderSuperposition(sources) {
+    let superpositionValues = new Array(this.measuresCount).fill(0);
+    const modelIndex = this.channels.length + this.models.length;
+    const modelId = `model-chart${modelIndex}`;
+    const channels = this.channels.filter((channel) => {
+      return findElementById(sources, channel.id) != undefined;
+    });
+    const models = this.models.filter((model) => {
+      return findElementById(sources, model.id) != undefined;
+    });
+    if (channels) {
+      channels.forEach((channel) => {
+        channel.values.forEach((value, index) => {
+          const coef = findElementById(sources, channel.id).value;
+          superpositionValues[index] += value * coef;
+        });
+      });
+    }
+    if (models) {
+      models.forEach((model) => {
+        model.values.forEach((value, index) => {
+          const coef = findElementById(sources, model.id).value;
+          superpositionValues[index] += value * coef;
+        });
+      });
+    }
+    const superposition = new Model(
+      `Суперпозиция каналов`,
+      this.measuresCount,
+      this.frequency,
+      this.recordingTime,
+      "superposition",
+      modelId,
+      this.id,
+      []
+    );
+    superposition.values = superpositionValues;
+    superposition.renderChart(this.channels);
+    this.models.push(superposition);
   }
 }
