@@ -1,7 +1,6 @@
 import { Source } from "./Source.js";
 import { Model } from "./Model.js";
 import { findElementById } from "../main.js";
-import { Channel } from "./Channel.js";
 
 export class Signal extends Source {
   #createButtons;
@@ -171,11 +170,17 @@ export class Signal extends Source {
               return normalLawValues[0];
             } else {
               let value = normalLawValues[step];
-              for (let i = 1; i <= Q; i++) {
-                value += bCoefs[i - 1] * normalLawValues[step - 1];
+              for (let i = 0; i < Q; i++) {
+                const index = step - i - 1;
+                if (index >= 0) {
+                  value += bCoefs[i] * normalLawValues[index];
+                }
               }
-              for (let i = 1; i <= P; i++) {
-                value += aCoefs[i - 1] * data[step - 1];
+              for (let i = 0; i < P; i++) {
+                const index = step - i - 1;
+                if (index >= 0) {
+                  value -= aCoefs[i] * data[index];
+                }
               }
               return value;
             }
