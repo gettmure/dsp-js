@@ -1,6 +1,6 @@
-import { Source } from "./Source.js";
-import { Model } from "./Model.js";
-import { findElementById } from "../main.js";
+import { Source } from './Source.js';
+import { Model } from './Model.js';
+import { findElementById } from '../main.js';
 
 export class Signal extends Source {
   #createButtons;
@@ -23,14 +23,14 @@ export class Signal extends Source {
       const CHANNELS_MENU_HTML = `<div class="channels-menu" id="${this.id}"></div>`;
       const SIGNAL_INFO_BUTTON_HTML = `<button class="signal-info-btn btn dropdown-item" style="white-space:normal;" id="${this.id}-info">${this.name}</button>`;
 
-      if ($(".signal-navigation-menu-container").css("display") == "none") {
-        $(".signal-navigation-menu-container").css("display", "block");
+      if ($('.signal-navigation-menu-container').css('display') == 'none') {
+        $('.signal-navigation-menu-container').css('display', 'block');
       }
 
-      $(".signal-navigation-menu-container").append(CHANNELS_MENU_HTML);
-      $("#signal-navigation-menu").append(SIGNAL_BUTTON_HTML);
-      $("#signals-info-menu").append(SIGNAL_INFO_BUTTON_HTML);
-      $(".signal-choice").append(
+      $('.signal-navigation-menu-container').append(CHANNELS_MENU_HTML);
+      $('#signal-navigation-menu').append(SIGNAL_BUTTON_HTML);
+      $('#signals-info-menu').append(SIGNAL_INFO_BUTTON_HTML);
+      $('.signal-choice').append(
         `<option class="signal-item" value="${this.id}" id="${
           this.id.match(/\d+/)[0]
         }">${this.name}</option>`
@@ -42,29 +42,29 @@ export class Signal extends Source {
       let modelFunction;
       let normalLawValues = [];
       switch (type) {
-        case "Delayed single impulse": {
-          modelFunction = (params, step) => {
+        case 'Delayed single impulse': {
+          modelFunction = (step) => {
             const impulseDelay = params[0];
             return step == impulseDelay ? 1 : 0;
           };
           break;
         }
-        case "Delayed single bounce": {
-          modelFunction = (params, step) => {
+        case 'Delayed single bounce': {
+          modelFunction = (step) => {
             const bounceDelay = params[0];
             return step >= bounceDelay ? 1 : 0;
           };
           break;
         }
-        case "Decreasing discretized exponent": {
-          modelFunction = (params, step) => {
+        case 'Decreasing discretized exponent': {
+          modelFunction = (step) => {
             const base = params[0];
             return Math.pow(base, step);
           };
           break;
         }
-        case "Discretized sinusoid": {
-          modelFunction = (params, step) => {
+        case 'Discretized sinusoid': {
+          modelFunction = (step) => {
             const amplitude = params[0];
             const frequency = params[1];
             const phase = params[2];
@@ -72,22 +72,22 @@ export class Signal extends Source {
           };
           break;
         }
-        case "Meander": {
-          modelFunction = (params, step) => {
+        case 'Meander': {
+          modelFunction = (step) => {
             const period = params[0];
             return step % period < period / 2 ? 1 : -1;
           };
           break;
         }
-        case "Saw": {
-          modelFunction = (params, step) => {
+        case 'Saw': {
+          modelFunction = (step) => {
             const period = params[0];
             return (step % period) / period;
           };
           break;
         }
-        case "Exponential envelope": {
-          modelFunction = (params, step) => {
+        case 'Exponential envelope': {
+          modelFunction = (step) => {
             step = (step * this.period) / 1000;
             const amplitude = params[0];
             const width = params[1];
@@ -101,8 +101,8 @@ export class Signal extends Source {
           };
           break;
         }
-        case "Balance envelope": {
-          modelFunction = (params, step) => {
+        case 'Balance envelope': {
+          modelFunction = (step) => {
             step = (step * this.period) / 1000;
             const amplitude = params[0];
             const envelopeFrequency = params[1];
@@ -116,8 +116,8 @@ export class Signal extends Source {
           };
           break;
         }
-        case "Tonal envelope": {
-          modelFunction = (params, step) => {
+        case 'Tonal envelope': {
+          modelFunction = (step) => {
             step = (step * this.period) / 1000;
             const amplitude = params[0];
             const envelopeFrequency = params[1];
@@ -132,16 +132,16 @@ export class Signal extends Source {
           };
           break;
         }
-        case "White noise (interval)": {
-          modelFunction = (params, step) => {
+        case 'White noise (interval)': {
+          modelFunction = (step) => {
             const left = params[0][0];
             const right = params[0][1];
             return left + (right - left) * Math.random();
           };
           break;
         }
-        case "White noise (normal law)": {
-          modelFunction = (params, step) => {
+        case 'White noise (normal law)': {
+          modelFunction = (step) => {
             const alpha = params[0];
             const sigma = Math.sqrt(params[1]);
             let randomValue = 0;
@@ -153,8 +153,8 @@ export class Signal extends Source {
           };
           break;
         }
-        case "АРСС": {
-          modelFunction = (params, step) => {
+        case 'АРСС': {
+          modelFunction = (step) => {
             const sigma = Math.sqrt(params[0]);
             const aCoefs = params[1];
             const bCoefs = params[2];
@@ -189,7 +189,7 @@ export class Signal extends Source {
         }
       }
       for (let i = 0; i < this.measuresCount; i++) {
-        const value = modelFunction(params, i);
+        const value = modelFunction(i);
         data.push(value);
       }
       return data;
@@ -256,7 +256,7 @@ export class Signal extends Source {
       this.measuresCount,
       this.frequency,
       this.recordingTime,
-      "superposition",
+      'superposition',
       modelId,
       this.id,
       []

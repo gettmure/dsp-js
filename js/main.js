@@ -1,27 +1,28 @@
-import { showSignalInfo } from "./info_modal.js";
-import { parseTxtFile } from "./parser.js";
+import { showSignalInfo } from './info_modal.js';
+import { parseTxtFile } from './parser.js';
+import { createChannelsCheckboxes, saveFile } from './save_file.js';
+import { createStatisticsButtons } from './analysis.js';
 import {
   createModel,
   switchModelType,
   showModellingWindow,
   createSuperposition,
   createSuperpositionButtons,
-} from "./modelling.js";
-import { createChannelsCheckboxes, saveFile } from "./save_file.js";
+} from './modelling.js';
 
 let signals = [];
 let isOpened = false;
 
-$("#open-file-btn").click(function () {
-  document.getElementById("file-input").click();
+$('#open-file-btn').click(function () {
+  document.getElementById('file-input').click();
 });
 
-$("#about-btn").click(function () {
-  alert("DSP - программа для анализа сигналов");
+$('#about-btn').click(function () {
+  alert('DSP - программа для анализа сигналов');
 });
 
-$("#author-btn").click(function () {
-  alert("Мышалов Родион Б8118-02.03.01сцт 1 подгруппа");
+$('#author-btn').click(function () {
+  alert('Мышалов Родион Б8118-02.03.01сцт 1 подгруппа');
 });
 
 export function getRandomColor() {
@@ -35,15 +36,19 @@ export function findElementById(elements, id) {
   });
 }
 
+function isModel(id) {
+  return id.match(/model/gm) != null;
+}
+
 function getExtension(filename) {
-  let parts = filename.split(".");
+  let parts = filename.split('.');
   return parts[parts.length - 1];
 }
 
 function showSignalsMenu() {
-  $(".channels-menu").css("display", "none");
-  $("#signal-navigation-menu").css("display", "block");
-  $("#return-btn").css("display", "none");
+  $('.channels-menu').css('display', 'none');
+  $('#signal-navigation-menu').css('display', 'block');
+  $('#return-btn').css('display', 'none');
 }
 
 function readTxtFile(file) {
@@ -51,7 +56,7 @@ function readTxtFile(file) {
   return new Promise((resolve, reject) => {
     fileReader.onerror = () => {
       fileReader.abort();
-      reject(new DOMException("Problem parsing input file."));
+      reject(new DOMException('Problem parsing input file.'));
     };
 
     fileReader.onload = () => {
@@ -70,7 +75,7 @@ async function getDataFromTxt(file) {
     console.log(e);
   }
 }
-$("#file-input").change(async function (event) {
+$('#file-input').change(async function (event) {
   const file = event.target.files[0];
   if (!file) {
     return;
@@ -78,12 +83,12 @@ $("#file-input").change(async function (event) {
   if (signals.length == 0) {
     const SIGNALS_LIST_HTML =
       '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control signal-choice" id="modelling-signal"></select></div>';
-    $("#options-container").before(SIGNALS_LIST_HTML);
-    $("#measures-count").remove();
-    $("#frequency").remove();
+    $('#options-container').before(SIGNALS_LIST_HTML);
+    $('#measures-count').remove();
+    $('#frequency').remove();
   }
   switch (getExtension(file.name)) {
-    case "txt":
+    case 'txt':
       const data = await getDataFromTxt(file);
       signals.push(data);
       break;
@@ -91,29 +96,28 @@ $("#file-input").change(async function (event) {
   signals[signals.length - 1].renderChannels();
 });
 
-$(document).on("click change", "#save-file-btn, #save-signal", function () {
-  const signalId = $("#save-signal").val();
+$(document).on('click change', '#save-file-btn, #save-signal', function () {
+  const signalId = $('#save-signal').val();
   const signal = findElementById(signals, signalId);
   if (signal) {
     createChannelsCheckboxes(signal);
   }
 });
 
-$(document).on("click", "#save-file", function () {
-  const signalId = $("#save-signal").val();
+$(document).on('click', '#save-file', function () {
+  const signalId = $('#save-signal').val();
   const signal = findElementById(signals, signalId);
   saveFile(signal);
 });
 
-$(document).on("click", ".channel-btn", function () {
+$(document).on('click', '.channel-btn', function () {
   let source;
   const clickedButton = this;
-  const signalId = $(clickedButton).parent().attr("id");
-  const chartId = $(clickedButton).attr("id");
-  const isModel = chartId.match(/model/gm) != null;
+  const signalId = $(clickedButton).parent().attr('id');
+  const chartId = $(clickedButton).attr('id');
   const isSuperposition = chartId.match(/superposition/gm) != null;
   const signal = findElementById(signals, signalId);
-  if (isModel) {
+  if (isModel(chartId)) {
     source = findElementById(signal.models, chartId);
   } else {
     if (isSuperposition) {
@@ -125,72 +129,95 @@ $(document).on("click", ".channel-btn", function () {
   source.showChart();
 });
 
-$(document).on("click", ".signal-info-btn", function () {
-  const signalId = $(this).attr("id").split("-")[0];
+$(document).on('click', '.signal-info-btn', function () {
+  const signalId = $(this).attr('id').split('-')[0];
   const signal = findElementById(signals, signalId);
   showSignalInfo(signal);
 });
 
-$(document).on("click", ".modelling-btn", function () {
-  const buttonId = $(this).attr("id");
+$(document).on('click', '.modelling-btn', function () {
+  const buttonId = $(this).attr('id');
   showModellingWindow(signals, buttonId);
 });
 
-$(document).on("click", "#superposition-btn", function () {
+$(document).on('click', '#superposition-btn', function () {
   if (signals.length != 0) {
-    const id = $("#superposition-signal").val();
+    const id = $('#superposition-signal').val();
     const signal = findElementById(signals, id);
     createSuperpositionButtons(signal);
   }
 });
 
-$(document).on("change", "#superposition-signal", function () {
+$(document).on('change', '#superposition-signal', function () {
   const id = $(this).val();
   const signal = findElementById(signals, id);
   createSuperpositionButtons(signal);
 });
 
-$(document).on("click", "#create-superposition-btn", function () {
-  const signalId = $(".signal-choice").val();
+$(document).on('click', '#create-superposition-btn', function () {
+  const signalId = $('.signal-choice').val();
   const signal = findElementById(signals, signalId);
   createSuperposition(signal);
 });
 
-$(document).on("change", "#model-type", function () {
+$(document).on('change', '#model-type', function () {
   const type = $(this).val();
   switchModelType(signals, type);
 });
 
-$(document).on("click", "#create-model-btn", function () {
+$(document).on('click', '#create-model-btn', function () {
   createModel(signals);
 });
 
-$(document).on("click", ".signal-btn", function () {
-  const menuId = $(this).attr("id").split("-")[0];
+$(document).on('click', '.signal-btn', function () {
+  const menuId = $(this).attr('id').split('-')[0];
   const menuSelector = `.channels-menu[id='${menuId}']`;
-  $("#signal-navigation-menu").css("display", "none");
-  $(menuSelector).css("display", "block");
-  $("#return-btn").css("display", "block");
+  $('#signal-navigation-menu').css('display', 'none');
+  $(menuSelector).css('display', 'block');
+  $('#return-btn').css('display', 'block');
 });
 
-$(document).on("click", ".channel-btn", function () {
-  $("#show-signal-navigation-menu-btn").html("&#60");
-  $(".signal-navigation-menu-container").css("right", "-15rem");
+$(document).on('click', '.channel-btn', function () {
+  $('#show-signal-navigation-menu-btn').html('&#60');
+  $('.signal-navigation-menu-container').css('right', '-15rem');
   showSignalsMenu();
   isOpened = !isOpened;
 });
 
-$(document).on("click", "#return-btn", function () {
+$(document).on('click', '#return-btn', function () {
   showSignalsMenu();
 });
 
-$("#show-signal-navigation-menu-btn").click(function () {
+$('#show-signal-navigation-menu-btn').click(function () {
   if (!isOpened) {
-    $(".signal-navigation-menu-container").css("right", "0");
-    $("#show-signal-navigation-menu-btn").html("&#62");
+    $('.signal-navigation-menu-container').css('right', '0');
+    $('#show-signal-navigation-menu-btn').html('&#62');
   } else {
-    $(".signal-navigation-menu-container").css("right", "-15rem");
-    $("#show-signal-navigation-menu-btn").html("&#60");
+    $('.signal-navigation-menu-container').css('right', '-15rem');
+    $('#show-signal-navigation-menu-btn').html('&#60');
   }
   isOpened = !isOpened;
+});
+
+$(document).on('click', '#statistics-btn', function () {
+  $('#statistics-container').css('display', 'none');
+  createStatisticsButtons(signals);
+});
+
+$(document).on('change', '.signal-choice', function () {
+  createStatisticsButtons(signals);
+});
+
+$(document).on('click', '#create-statistics-btn', function () {
+  const signalId = $('#statistics-signal').val();
+  const sourceId = $('#statistics-channel').val();
+  const intervalsCount = parseInt($('#intervals-count').val());
+  const signal = findElementById(signals, signalId);
+  let source;
+  if (isModel(sourceId)) {
+    source = findElementById(signal.models, sourceId);
+  } else {
+    source = findElementById(signal.channels, sourceId);
+  }
+  source.renderStatistics(intervalsCount);
 });

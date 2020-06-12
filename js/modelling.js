@@ -1,5 +1,5 @@
-import { Signal } from "./entities/Signal.js";
-import { findElementById } from "./main.js";
+import { Signal } from './entities/Signal.js';
+import { findElementById } from './main.js';
 
 function arraysAreEqual(arr1, arr2) {
   if (arr1.length !== arr2.length) {
@@ -14,14 +14,14 @@ function arraysAreEqual(arr1, arr2) {
 }
 
 export function createModel(signals) {
-  const modelType = $("#model-type").val();
-  const signalId = $(".signal-choice").val();
-  let parameters = Array.from(document.getElementsByClassName("parameter")).map(
+  const modelType = $('#model-type').val();
+  const signalId = $('.signal-choice').val();
+  let parameters = Array.from(document.getElementsByClassName('parameter')).map(
     (parameter) => {
-      if (parameter.value == "") {
+      if (parameter.value == '') {
         parameter.value = 0;
       }
-      if (parameter.className.includes("set")) {
+      if (parameter.className.includes('set')) {
         return parameter.value.split(/[\s,]+/).map((coef) => parseFloat(coef));
       } else {
         return parseFloat(parameter.value);
@@ -46,7 +46,7 @@ export function createModel(signals) {
       const measuresCount = parameters[0];
       const frequency = parameters[1];
       parameters = parameters.splice(2, parameters.length - 2);
-      const unixtime = Date.parse("2000-01-01 00:00:00.000 GMT");
+      const unixtime = Date.parse('2000-01-01 00:00:00.000 GMT');
       signal = new Signal(
         `Пользовательский сигнал`,
         1,
@@ -58,9 +58,9 @@ export function createModel(signals) {
       signals.push(signal);
       const SIGNALS_LIST_HTML =
         '<div class="form-group"><label for="signal-choice">Выберите сигнал</label><select class="form-control signal-choice"></select></div>';
-      $("#options-container").before(SIGNALS_LIST_HTML);
-      $("#measures-count").remove();
-      $("#frequency").remove();
+      $('#options-container').before(SIGNALS_LIST_HTML);
+      $('#measures-count').remove();
+      $('#frequency').remove();
     } else {
       signal = findElementById(signals, signalId);
     }
@@ -69,14 +69,14 @@ export function createModel(signals) {
 }
 
 export function switchModelType(signals, type) {
-  const signalId = $("#modelling-signal").val();
+  const signalId = $('#modelling-signal').val();
   const signal = findElementById(signals, signalId);
-  const parametersContainer = $("#parameters-container");
+  const parametersContainer = $('#parameters-container');
   let PARAMETERS_HTML;
   const ADDITIONAL_PARAMETERS_HTML = `
     <div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>`;
   switch (type) {
-    case "Delayed single impulse": {
+    case 'Delayed single impulse': {
       let MAIN_PARAMETERS_HTML;
       if (signals.length == 0) {
         MAIN_PARAMETERS_HTML = `
@@ -85,13 +85,13 @@ export function switchModelType(signals, type) {
         const DEFAULT_DELAY = signal.measuresCount / 2;
         MAIN_PARAMETERS_HTML = `
           <label for="delay">Задержка импульса (N0): [1, ${
-            signal != undefined ? signal.measuresCount : "N"
+            signal != undefined ? signal.measuresCount : 'N'
           }]</label><input class="parameter form-control" id="delay" value=${DEFAULT_DELAY} placeholder="N0">`;
       }
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "Delayed single bounce": {
+    case 'Delayed single bounce': {
       let MAIN_PARAMETERS_HTML;
       if (signals.length == 0) {
         MAIN_PARAMETERS_HTML = `
@@ -104,14 +104,14 @@ export function switchModelType(signals, type) {
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "Decreasing discretized exponent": {
+    case 'Decreasing discretized exponent': {
       const DEFAULT_BASE = 0.5;
       const MAIN_PARAMETERS_HTML = `
         <label for="base">Основание степени (a): a -> (0, 1)</label><input value=${DEFAULT_BASE} class="parameter form-control" id="base" placeholder="a">`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "Discretized sinusoid": {
+    case 'Discretized sinusoid': {
       const DEFAULT_AMPLITUDE = 1;
       const DEFAULT_CIRCULAR_FREQUENCY = 1.570796326;
       const DEFAULT_INITIAL_PHASE = 0;
@@ -122,15 +122,15 @@ export function switchModelType(signals, type) {
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "Meander":
-    case "Saw": {
+    case 'Meander':
+    case 'Saw': {
       const DEFAULT_PERIOD = 5;
       const MAIN_PARAMETERS_HTML = `
         <label for="period">Период (L)</label><input value=${DEFAULT_PERIOD} class="parameter form-control" id="period" placeholder="L">`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "Exponential envelope": {
+    case 'Exponential envelope': {
       const DEFAULT_AMPLITUDE = 1;
       const DEFAULT_ENVELOPE_WIDTH = 1;
       const DEFAULT_INITIAL_PHASE = 0;
@@ -155,7 +155,7 @@ export function switchModelType(signals, type) {
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "Balance envelope": {
+    case 'Balance envelope': {
       const DEFAULT_AMPLITUDE = 1;
       const DEFAULT_ENVELOPE_FREQUENCY = 1;
       const DEFAULT_INITIAL_PHASE = 0;
@@ -180,7 +180,7 @@ export function switchModelType(signals, type) {
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "Tonal envelope": {
+    case 'Tonal envelope': {
       const DEFAULT_AMPLITUDE = 1;
       const DEFAULT_ENVELOPE_FREQUENCY = 1;
       const DEFAULT_INITIAL_PHASE = 0;
@@ -206,20 +206,20 @@ export function switchModelType(signals, type) {
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "White noise (interval)": {
+    case 'White noise (interval)': {
       const MAIN_PARAMETERS_HTML = `
 			  <div class="form-group"><label for="interval">Интервал [a, b]</label><input class="parameter form-control set" id="interval" placeholder="[a, b]"></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "White noise (normal law)": {
+    case 'White noise (normal law)': {
       const MAIN_PARAMETERS_HTML = `
 			  <div class="form-group"><label for="alpha">Среднее (альфа)</label><input class="parameter form-control" id="alpha" placeholder="a"></div>
 			  <div class="form-group"><label for="sigma">Дисперсия (сигма^2)</label><input class="parameter form-control" id="sigma" placeholder="Сигма^2"></div>`;
       PARAMETERS_HTML = MAIN_PARAMETERS_HTML;
       break;
     }
-    case "АРСС": {
+    case 'АРСС': {
       const MAIN_PARAMETERS_HTML = `
         <div class="form-group"><label for="sigma">Дисперсия (сигма^2)</label><input class="parameter form-control" id="sigma" placeholder="Сигма^2"></div>
 			  <div class="form-group"><label for="a-coef">Множество коэффициентов a</label><input class="parameter form-control set" id="a-coef" placeholder="1, 2, ..."></div>
@@ -239,10 +239,10 @@ export function showModellingWindow(signals, buttonId) {
     <div class="form-group"><label for="measures-count">Количество отсчётов (N)</label><input class="parameter form-control" id="measures-count" placeholder="N"></div><div class="form-group"><label for="frequency">Частота (f)</label><input class="parameter form-control" id="frequency" placeholder="f"></div>`;
   let DEFAULT_PARAMETERS_HTML;
   switch (buttonId) {
-    case "determinated-signal-btn": {
+    case 'determinated-signal-btn': {
       let defaultDelay;
       signals.length == 0
-        ? (defaultDelay = "N")
+        ? (defaultDelay = 'N')
         : (defaultDelay = signals[0].measuresCount);
       DEFAULT_PARAMETERS_HTML = `
         <label for="delay">Задержка импульса (N0): [1, ${defaultDelay}]</label><input class="parameter form-control" id="delay" placeholder="N0">`;
@@ -255,13 +255,13 @@ export function showModellingWindow(signals, buttonId) {
 				<option value="Discretized sinusoid">Дискретизированная синусоида</option>
 				<option value="Meander">"Меандр" (прямоугольная решетка)</option>
 				<option value="Saw">“Пила"</option>`;
-      $("#model-type").html(MODEL_TYPE_ITEMS_HTML);
+      $('#model-type').html(MODEL_TYPE_ITEMS_HTML);
       break;
     }
-    case "uninterrupted-signal-btn": {
+    case 'uninterrupted-signal-btn': {
       let defaultCarrierFrequency;
       signals.length == 0
-        ? (defaultCarrierFrequency = "0.5*f")
+        ? (defaultCarrierFrequency = '0.5*f')
         : (defaultCarrierFrequency = 0.5 * signals[0].frequency);
       DEFAULT_PARAMETERS_HTML = `
 			  <div class="form-group"><label for="amplitude">Амплитуда (a)</label><input value="1" class="parameter form-control" id="amplitude" placeholder="a"></div>
@@ -273,10 +273,10 @@ export function showModellingWindow(signals, buttonId) {
 				<option value="Balance envelope">Балансная огибающая</option>
 				<option value="Tonal envelope">Тональная огибающая</option>
 			`;
-      $("#model-type").html(MODEL_TYPE_ITEMS_HTML);
+      $('#model-type').html(MODEL_TYPE_ITEMS_HTML);
       break;
     }
-    case "random-signal-btn": {
+    case 'random-signal-btn': {
       DEFAULT_PARAMETERS_HTML = `
 			  <div class="form-group"><label for="interval">Интервал [a, b]</label><input class="parameter form-control set" id="interval" placeholder="[a, b]"></div>`;
       const MODEL_TYPE_ITEMS_HTML = `
@@ -284,7 +284,7 @@ export function showModellingWindow(signals, buttonId) {
 				<option value="White noise (normal law)">Сигнал белого шума (нормальный закон распределения)</option>
 				<option value="АРСС">АРСС</option>
 			`;
-      $("#model-type").html(MODEL_TYPE_ITEMS_HTML);
+      $('#model-type').html(MODEL_TYPE_ITEMS_HTML);
       break;
     }
   }
@@ -292,11 +292,11 @@ export function showModellingWindow(signals, buttonId) {
     DEFAULT_PARAMETERS_HTML =
       ADDITIONAL_PARAMETERS_HTML + DEFAULT_PARAMETERS_HTML;
   }
-  $("#parameters-container").html(DEFAULT_PARAMETERS_HTML);
+  $('#parameters-container').html(DEFAULT_PARAMETERS_HTML);
 }
 
 export function createSuperpositionButtons(signal) {
-  let SOURCES_HTML = "";
+  let SOURCES_HTML = '';
   signal.channels.forEach((channel) => {
     SOURCES_HTML += `
     <div class="form-group"><label for="${channel.id}-coef">${channel.name}</label>
@@ -307,16 +307,16 @@ export function createSuperpositionButtons(signal) {
     <div class="form-group"><label for="${model.id}-coef">${model.name}</label>
     <input class="coef form-control" id="${model.id}-coef" placeholder=""></div>`;
   });
-  $("#superposition-channels-container").html(SOURCES_HTML);
+  $('#superposition-channels-container').html(SOURCES_HTML);
 }
 
 export function createSuperposition(signal) {
-  const selectedSources = Array.from(document.getElementsByClassName("coef"))
+  const selectedSources = Array.from(document.getElementsByClassName('coef'))
     .filter((element) => {
-      return element.value != "";
+      return element.value != '';
     })
     .map((element) => {
-      const splittedId = element.id.split("-");
+      const splittedId = element.id.split('-');
       return {
         id:
           element.id.match(/model/gm) == null

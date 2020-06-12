@@ -1,11 +1,20 @@
-import { Source } from "./Source.js";
-import { getRandomColor } from "../main.js";
+import { Source } from './Source.js';
+import { getRandomColor } from '../main.js';
 
 export class Channel extends Source {
   #getChartData;
   #getMinMax;
   #syncHandler;
   #scrollHandler;
+  #middle;
+  #dispersion;
+  #deviation;
+  #statisticsSum;
+  #variationCoef;
+  #asymmetryCoef;
+  #excessCoef;
+  #calculateQuantile;
+  #calculateStatistics;
 
   constructor(name, measuresCount, frequency, startTime, id, signalId) {
     super(measuresCount, frequency, startTime, id);
@@ -17,6 +26,42 @@ export class Channel extends Source {
     this.minimalValue;
     this.maximalValue;
 
+    this.#statisticsSum = (power) => {
+      let denominator;
+      power == 2
+        ? (denominator = 1)
+        : (denominator = this.measuresCount * Math.pow(this.#deviation, power));
+      return (
+        this.values.reduce(
+          (previousValue, currentValue) =>
+            previousValue + Math.pow(currentValue - this.#middle, power)
+        ) / denominator
+      );
+    };
+
+    this.#calculateStatistics = () => {
+      this.#middle = (
+        this.values.reduce(
+          (previousValue, currentValue) => previousValue + currentValue
+        ) / this.measuresCount
+      ).toFixed(2);
+
+      this.#dispersion = this.#statisticsSum(2).toFixed(2);
+
+      this.#deviation = Math.sqrt(this.#dispersion).toFixed(2);
+
+      this.#variationCoef = (this.#deviation / this.#middle).toFixed(2);
+
+      this.#asymmetryCoef = this.#statisticsSum(3).toFixed(2);
+
+      this.#excessCoef = (this.#statisticsSum(4) - 3).toFixed(2);
+    };
+
+    this.#calculateQuantile = (order) => {
+      const index = Math.trunc(order * this.measuresCount);
+      return this.values.sort((a, b) => a - b)[index];
+    };
+
     this.#syncHandler = (e, channels) => {
       channels.forEach((channel) => {
         const chart = channel.chart;
@@ -27,7 +72,7 @@ export class Channel extends Source {
         if (!options.axisY) {
           options.axisY = {};
         }
-        if (e.trigger === "reset") {
+        if (e.trigger === 'reset') {
           options.axisX.viewportMinimum = options.axisX.viewportMaximum = null;
           options.axisY.viewportMinimum = options.axisY.viewportMaximum = null;
           chart.render();
@@ -54,7 +99,7 @@ export class Channel extends Source {
         });
         step += this.period;
       }
-      let dataSeries = { type: "line", color: getRandomColor() };
+      let dataSeries = { type: 'line', color: getRandomColor() };
       dataSeries.dataPoints = dataPoints;
       data.push(dataSeries);
       return data;
@@ -78,12 +123,12 @@ export class Channel extends Source {
       const start = this.recordingTime;
       const end = this.endTime - range;
       $(function () {
-        if (trigger == "reset") {
+        if (trigger == 'reset') {
           if ($(classSelector).slider()) {
-            $(classSelector).slider("destroy");
+            $(classSelector).slider('destroy');
           }
         }
-        if (trigger == "zoom" || trigger == "pan") {
+        if (trigger == 'zoom' || trigger == 'pan') {
           $(classSelector).slider({
             min: start,
             max: end,
@@ -96,11 +141,11 @@ export class Channel extends Source {
               }
               channels.forEach((channel) => {
                 const currentAsixX = channel.chart.axisX[0];
-                currentAsixX.set("viewportMinimum", leftLimit, false);
-                currentAsixX.set("viewportMaximum", rightLimit);
+                currentAsixX.set('viewportMinimum', leftLimit, false);
+                currentAsixX.set('viewportMaximum', rightLimit);
               });
               $(classSelector).each(function () {
-                $(this).slider("option", "value", leftLimit);
+                $(this).slider('option', 'value', leftLimit);
               });
             },
           });
@@ -111,7 +156,8 @@ export class Channel extends Source {
 
   renderChart(channels) {
     const chartData = this.#getChartData();
-    const CHANNEL_BUTTON_HTML = `<button class="dropdown-item channel-btn" type="button" id="${this.id}">${this.name}</button>`;
+    const CHANNEL_BUTTON_HTML = `
+      <button class="dropdown-item channel-btn" type="button" id="${this.id}">${this.name}</button>`;
     this.#getMinMax(this.values);
     $(`#${this.signalId}`).append(CHANNEL_BUTTON_HTML);
     this.demoChart = new CanvasJS.Chart(`${this.id}`, {
@@ -122,22 +168,22 @@ export class Channel extends Source {
         text: this.name,
       },
       axisY: {
-        title: "",
-        valueFormatString: " ",
+        title: '',
+        valueFormatString: ' ',
         minimum: this.minimalValue,
         maximum: this.maximalValue,
       },
       axisX: {
-        title: "",
-        valueFormatString: " ",
+        title: '',
+        valueFormatString: ' ',
       },
       data: chartData,
     });
     $(
-      ".channel-btn > div > .canvasjs-chart-canvas + .canvasjs-chart-canvas"
-    ).css("position", "");
+      '.channel-btn > div > .canvasjs-chart-canvas + .canvasjs-chart-canvas'
+    ).css('position', '');
     this.demoChart.render();
-    $("article").append(
+    $('article').append(
       `<div class="chartContainer mb-2" id="${this.id}-container"></div>`
     );
     this.chart = new CanvasJS.Chart(`${this.id}-container`, {
@@ -145,11 +191,11 @@ export class Channel extends Source {
       height: 325,
       animationEnabled: false,
       zoomEnabled: true,
-      zoomType: "x",
+      zoomType: 'x',
       rangeChanging: (e) => {
         const axisX = this.chart.axisX[0];
         const range =
-          axisX.get("viewportMaximum") - axisX.get("viewportMinimum");
+          axisX.get('viewportMaximum') - axisX.get('viewportMinimum');
         this.#scrollHandler(e, channels, range);
       },
       rangeChanged: (e) => {
@@ -171,6 +217,76 @@ export class Channel extends Source {
     this._createScroll();
   }
 
+  showChart() {
+    this.chart.render();
+    $(`#${this.id}-container`).css({
+      display: 'block',
+      'background-color': getRandomColor(),
+    });
+  }
+
+  renderStatistics(intervalsCount) {
+    this.#calculateStatistics();
+    let data = [];
+    let dataPoints = [];
+    let barData = [];
+    barData.length = intervalsCount;
+    barData.fill(0);
+    const width = (this.maximalValue - this.minimalValue) / intervalsCount;
+    this.values.forEach((value) => {
+      const index = Math.trunc((value - this.minimalValue) / width);
+      if (index == 0) {
+        barData[0]++;
+      } else {
+        barData[index - 1]++;
+      }
+    });
+    for (let i = 0; i < intervalsCount; i += 1) {
+      dataPoints.push({
+        x: i + 1,
+        y: barData[i],
+      });
+    }
+    let dataSeries = { type: 'column', color: '#000000' };
+    dataSeries.dataPoints = dataPoints;
+    data.push(dataSeries);
+
+    console.log(data);
+
+    const chart = new CanvasJS.Chart('bar-chart', {
+      width: 400,
+      height: 200,
+      interactivityEnabled: false,
+      axisY: {
+        title: '',
+        valueFormatString: ' ',
+      },
+      axisX: {
+        title: '',
+        valueFormatString: ' ',
+      },
+      data: data,
+    });
+    $('#options-container').css('display', 'none');
+    $('#statistics-container').css('display', 'flex');
+    $('#middle').html(`Среднее = ${this.#middle}`);
+    $('#dispersion').html(`Дисперсия = ${this.#dispersion}`);
+    $('#deviation').html(`Ср. кв. откл = ${this.#deviation}`);
+    $('#variationCoef').html(`Вариация = ${this.#variationCoef}`);
+    $('#asymmetryCoef').html(`Асимметрия = ${this.#asymmetryCoef}`);
+    $('#excessCoef').html(`Эксцесс = ${this.#excessCoef}`);
+    $('#max-value').html(`Максимум = ${this.maximalValue}`);
+    $('#min-value').html(`Минимум = ${this.minimalValue}`);
+    $('#quantile005').html(
+      `Квантиль порядка 0.05 = ${this.#calculateQuantile(0.05)}`
+    );
+    $('#quantile095').html(
+      `Квантиль порядка 0.95 = ${this.#calculateQuantile(0.95)}`
+    );
+    $('#median').html(`Медиана = ${this.#calculateQuantile(0.5)}`);
+    chart.render();
+  }
+
   _createScroll() {
     $(`#${this.id}-container`).append(
       `<div class="slider-container"><div class="${this.signalId}-slider" id="${this.id}-slider"></div></div>`
@@ -179,13 +295,5 @@ export class Channel extends Source {
 
   _getSelector() {
     return `.${this.signalId}-slider`;
-  }
-
-  showChart() {
-    this.chart.render();
-    $(`#${this.id}-container`).css({
-      display: "block",
-      "background-color": getRandomColor(),
-    });
   }
 }
