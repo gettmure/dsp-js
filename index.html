@@ -94,15 +94,10 @@
 								Анализ
 							</a>
 							<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-								<button class="btn dropdown-item" href="#" style="white-space:normal;">Частотный</button>
-								<button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
-									корреляционный произвольных пар сигналов</button>
-								<button class="btn dropdown-item" href="#" style="white-space:normal;">Взаимный
-									спектральный произвольных пар сигналов</button>
-								<button class="btn dropdown-item" href="#" style="white-space:normal;">Частотно-временной анализ
-									сигналов с использованием
-									Фурье-спектрограмм</button>
-								<button class="btn dropdown-item" href="#" style="white-space:normal;">Вейвлетограммы</button>
+								<button class="btn dropdown-item analysis-btn" id="statistics-btn" style="white-space:normal;" data-toggle="modal"
+								data-target="#statistics-modal">Статистики</button>
+								<button class="btn dropdown-item analysis-btn" id="spectral-btn" style="white-space:normal;" data-toggle="modal"
+								data-target="#spectral-modal">Спектральный анализ</button>
 							</div>
 						</div>
 					</div>
@@ -260,6 +255,104 @@
 							Закрыть
 						</button>
 						<button type="button" class="btn btn-primary" data-dismiss="modal" id="create-superposition-btn">Применить</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="statistics-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalCenterTitle">
+						Статистика каналов
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="statistics-form">
+					<div class="modal-body">
+						<div id="options-container">
+							<div class="form-group">
+								<label for="signal-choice">Выберите сигнал</label>
+								<select class="form-control signal-choice" id="statistics-signal">
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="channel-choice">Выберите канал</label>
+								<select class="form-control channel-choice" id="statistics-channel">
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="intervals-count">Укажите количество интервалов (K)</label>
+								<input class="parameter form-control" id="intervals-count" placeholder="Кол-во интервалов">
+							</div>
+						</div>
+						<div id="statistics-container">
+							<div id="middle"></div>
+							<div id="dispersion"></div>
+							<div id="deviation"></div>
+							<div id="variationCoef"></div>
+							<div id="asymmetryCoef"></div>
+							<div id="excessCoef"></div>
+							<div id="max-value"></div>
+							<div id="min-value"></div>
+							<div id="quantile005"></div>
+							<div id="quantile095"></div>
+							<div id="median"></div>
+							<div id="bar-chart"></div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">
+							Закрыть
+						</button>
+						<button type="button" class="btn btn-primary" id="create-statistics-btn">Применить</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="spectral-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalCenterTitle">
+						Спектральный анализ
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="spectral-form">
+					<div class="modal-body">
+						<div id="options-container">
+							<div class="form-group">
+								<label for="signal-choice">Выберите сигнал</label>
+								<select class="form-control signal-choice">
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="channel-choice">Выберите канал</label>
+								<select class="form-control channel-choice">
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="smoothing-parameter">Параметр сглаживания (L)</label>
+								<input class="parameter form-control" id="smoothing-parameter" placeholder="L" value=0>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">
+							Закрыть
+						</button>
+						<button type="button" class="btn btn-primary" id="create-spectral-btn" data-dismiss="modal">Применить</button>
 					</div>
 				</form>
 			</div>

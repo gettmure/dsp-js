@@ -9,6 +9,7 @@ import {
   createSuperposition,
   createSuperpositionButtons,
 } from './modelling.js';
+import { Signal } from './entities/Signal.js';
 
 let signals = [];
 let isOpened = false;
@@ -209,8 +210,8 @@ $(document).on('change', '.signal-choice', function () {
 });
 
 $(document).on('click', '#create-statistics-btn', function () {
-  const signalId = $('#statistics-signal').val();
-  const sourceId = $('#statistics-channel').val();
+  const signalId = $('.signal-choice').val();
+  const sourceId = $('.channel-choice').val();
   const intervalsCount = parseInt($('#intervals-count').val());
   const signal = findElementById(signals, signalId);
   let source;
@@ -220,4 +221,18 @@ $(document).on('click', '#create-statistics-btn', function () {
     source = findElementById(signal.channels, sourceId);
   }
   source.renderStatistics(intervalsCount);
+});
+
+$(document).on('click', '#create-spectral-btn', function () {
+  const signalId = $('.signal-choice').val();
+  const sourceId = $('.channel-choice').val();
+  const smoothParameter = $('#smoothing-parameter').val();
+  const signal = findElementById(signals, signalId);
+  let source;
+  if (isModel(sourceId)) {
+    source = findElementById(signal.models, sourceId);
+  } else {
+    source = findElementById(signal.channels, sourceId);
+  }
+  source.renderSpectral(smoothParameter);
 });

@@ -30,31 +30,26 @@ export class Channel extends Source {
       let denominator;
       power == 2
         ? (denominator = 1)
-        : (denominator = this.measuresCount * Math.pow(this.#deviation, power));
+        : (denominator = Math.pow(this.#deviation, power));
       return (
         this.values.reduce(
           (previousValue, currentValue) =>
             previousValue + Math.pow(currentValue - this.#middle, power)
-        ) / denominator
+        ) /
+        (this.measuresCount * denominator)
       );
     };
 
     this.#calculateStatistics = () => {
-      this.#middle = (
+      this.#middle =
         this.values.reduce(
           (previousValue, currentValue) => previousValue + currentValue
-        ) / this.measuresCount
-      ).toFixed(2);
-
-      this.#dispersion = this.#statisticsSum(2).toFixed(2);
-
-      this.#deviation = Math.sqrt(this.#dispersion).toFixed(2);
-
-      this.#variationCoef = (this.#deviation / this.#middle).toFixed(2);
-
-      this.#asymmetryCoef = this.#statisticsSum(3).toFixed(2);
-
-      this.#excessCoef = (this.#statisticsSum(4) - 3).toFixed(2);
+        ) / this.measuresCount;
+      this.#dispersion = this.#statisticsSum(2);
+      this.#deviation = Math.sqrt(this.#dispersion);
+      this.#variationCoef = this.#deviation / this.#middle;
+      this.#asymmetryCoef = this.#statisticsSum(3);
+      this.#excessCoef = this.#statisticsSum(4) - 3;
     };
 
     this.#calculateQuantile = (order) => {
@@ -251,8 +246,6 @@ export class Channel extends Source {
     dataSeries.dataPoints = dataPoints;
     data.push(dataSeries);
 
-    console.log(data);
-
     const chart = new CanvasJS.Chart('bar-chart', {
       width: 400,
       height: 200,
@@ -285,6 +278,35 @@ export class Channel extends Source {
     );
     $('#median').html(`Медиана = ${this.#calculateQuantile(0.5)}`);
     chart.render();
+  }
+
+  renderSpectral(L) {
+    let dpf = [0];
+    for (let k = 1; k < this.measuresCount / 2; k++) {
+      const complexRe = this.values.reduce(
+        (previousValue, currentValue, index) =>
+          previousValue +
+          currentValue *
+            Math.cos((-2 * Math.PI * k * index) / this.measuresCount)
+      );
+      const complexIm = this.values.reduce(
+        (previousValue, currentValue, index) =>
+          previousValue +
+          currentValue *
+            Math.sin((-2 * Math.PI * k * index) / this.measuresCount)
+      );
+      const value = {
+        real: complexRe,
+        imaginary: complexIm,
+      };
+      dpf.push(value);
+    }
+    const amplitudeSpectre = dpf
+      .map((value) => {
+        Math.sqrt(value.real * value.real + value.imaginary * value.imaginary);
+      })
+      .pop();
+    const spm = amplitudeSpectre.map((value) => value * value);
   }
 
   _createScroll() {

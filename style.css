@@ -1,99 +1,110 @@
 * {
-    font-size: 18px;
-    font-family: monospace;
+  font-size: 18px;
+  font-family: monospace;
 }
 
 #signal-navigation-menu {
-    border-radius: 0px !important;
-    padding: 0%;
-    display: block;
-    transition: 1s;
-    width: 100%;
-    overflow-y: auto;
+  border-radius: 0px !important;
+  padding: 0%;
+  display: block;
+  transition: 1s;
+  width: 100%;
+  overflow-y: auto;
 }
 
 .signal > div {
-    width: 100%;
+  width: 100%;
 }
 
 .signal > div > button {
-    margin: 10px;
-    word-wrap: normal;
-    white-space: normal;    
-    font-size: 15px !important;
+  margin: 10px;
+  word-wrap: normal;
+  white-space: normal;
+  font-size: 15px !important;
 }
 
 .signal-btn {
-    transition: 0.5s;
+  transition: 0.5s;
 }
 
 .channels-menu {
-    display: none;
-    overflow: auto;
-    height: 90%;
-    transition: 0.5s;
+  display: none;
+  overflow: auto;
+  height: 90%;
+  transition: 0.5s;
 }
 
 article {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 .chartContainer {
-    float: inline-start; 
-    display: none; 
-    resize: none; 
-    height: 430px; 
-    width: 630px; 
-    border: 2px solid black;
-    padding: 52px;
+  float: inline-start;
+  display: none;
+  resize: none;
+  height: 430px;
+  width: 630px;
+  border: 2px solid black;
+  padding: 52px;
 }
 
 .canvasjs-chart-credit {
-    display: none;
+  display: none;
 }
 
 #show-signal-navigation-menu-btn {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 1.5rem;
-    height: 2.5rem;
-    left: -1.5rem;
-    top: 45%;      
-    border: 1px solid black;
-    border-radius: 10px 0px 0px 10px;
-    background-color: rgb(233, 234, 235);
-    color: rgb(143, 143, 143);
-    cursor: pointer;
-    transition: 0.5s;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 1.5rem;
+  height: 2.5rem;
+  left: -1.5rem;
+  top: 45%;
+  border: 1px solid black;
+  border-radius: 10px 0px 0px 10px;
+  background-color: rgb(233, 234, 235);
+  color: rgb(143, 143, 143);
+  cursor: pointer;
+  transition: 0.5s;
 }
 
 .signal-navigation-menu-container {
-    display: none;
-    justify-content: center;
-    top: 0px;
-    right: -15rem;
-    position: fixed;
-    background-color: lightsteelblue;
-    border: 1px solid black;
-    height: 100%;
-    width: 15rem;
-    float: right;
-    transition: 0.7s;
-    z-index: 999;
+  display: none;
+  justify-content: center;
+  top: 0px;
+  right: -15rem;
+  position: fixed;
+  background-color: lightsteelblue;
+  border: 1px solid black;
+  height: 100%;
+  width: 15rem;
+  float: right;
+  transition: 0.7s;
+  z-index: 999;
 }
 
 #return-btn {
-    display: none;
-    width: 70%;
+  display: none;
+  width: 70%;
 }
 
 .channel-btn > .canvasjs-chart-container {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 .slider-container {
-    margin-top: 60%;
+  margin-top: 60%;
+}
+
+#statistics-container {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#bar-chart {
+  width: 400px;
+  height: 200px;
 }
