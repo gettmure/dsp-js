@@ -1,8 +1,7 @@
 import { findElementById } from './main.js';
 
-export function createStatisticsButtons(signals) {
+export function createChannelChoiceButtons(signals, signalId) {
   if (signals.length != 0) {
-    const signalId = $('#statistics-signal').val();
     const signal = findElementById(signals, signalId);
     let CHANNELS_SELECT_HTML = '';
     if (signal.channels.length != 0) {

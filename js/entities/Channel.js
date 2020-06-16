@@ -1,5 +1,6 @@
 import { Source } from './Source.js';
 import { getRandomColor } from '../main.js';
+import { Signal } from './Signal.js';
 
 export class Channel extends Source {
   #getChartData;
@@ -15,6 +16,7 @@ export class Channel extends Source {
   #excessCoef;
   #calculateQuantile;
   #calculateStatistics;
+  #getSpectralData;
 
   constructor(name, measuresCount, frequency, startTime, id, signalId) {
     super(measuresCount, frequency, startTime, id);
@@ -25,6 +27,7 @@ export class Channel extends Source {
     this.values = [];
     this.minimalValue;
     this.maximalValue;
+    this.mode = 'channel';
 
     this.#statisticsSum = (power) => {
       let denominator;
@@ -57,6 +60,57 @@ export class Channel extends Source {
       return this.values.sort((a, b) => a - b)[index];
     };
 
+    this.#getSpectralData = (L) => {
+      let dpf = [{ real: 0, imaginary: 0 }];
+      for (let k = 1; k < this.measuresCount / 2; k++) {
+        const complexRe = this.values.reduce(
+          (previousValue, currentValue, index) =>
+            previousValue +
+            currentValue *
+              Math.cos((-2 * Math.PI * k * index) / this.measuresCount)
+        );
+        const complexIm = this.values.reduce(
+          (previousValue, currentValue, index) =>
+            previousValue +
+            currentValue *
+              Math.sin((-2 * Math.PI * k * index) / this.measuresCount)
+        );
+        const value = {
+          real: complexRe,
+          imaginary: complexIm,
+        };
+        dpf.push(value);
+      }
+      let A = dpf.map((value) => {
+        return Math.sqrt(
+          value.real * value.real + value.imaginary * value.imaginary
+        );
+      });
+      A.pop();
+      let P = A.map((value) => value * value);
+      if (L > 0) {
+        A = A.map((value, index) => {
+          const multiplier = 1 / (2 * L + 1);
+          let sum = 0;
+          for (let i = -L; i <= L; i++) {
+            sum += A[Math.abs(index + i)];
+          }
+          return multiplier * sum;
+        });
+        P = P.map((value, index) => {
+          const multiplier = 1 / (2 * L + 1);
+          let sum = 0;
+          for (let i = -L; i <= L; i++) {
+            sum += P[Math.abs(index + i)];
+          }
+          return multiplier * sum;
+        });
+      }
+      const Alg = A.map((value) => (value == 0 ? 0 : 20 * Math.log10(value)));
+      const Plg = P.map((value) => 10 * Math.log10(value));
+      return [A, P, Alg, Plg];
+    };
+
     this.#syncHandler = (e, channels) => {
       channels.forEach((channel) => {
         const chart = channel.chart;
@@ -86,15 +140,31 @@ export class Channel extends Source {
     this.#getChartData = () => {
       let data = [];
       let dataPoints = [];
-      let step = this.recordingTime;
-      for (let i = 0; i < this.measuresCount; i += 1) {
-        dataPoints.push({
-          x: new Date(step),
-          y: this.values[i],
-        });
-        step += this.period;
+      switch (this.mode) {
+        case 'spectral': {
+          let step = 0;
+          for (let i = 0; i < this.measuresCount; i++) {
+            dataPoints.push({
+              x: step,
+              y: this.values[i],
+            });
+            step = i / (this.measuresCount * this.period);
+          }
+          break;
+        }
+        default: {
+          let step = this.recordingTime;
+          for (let i = 0; i < this.measuresCount; i++) {
+            dataPoints.push({
+              x: new Date(step),
+              y: this.values[i],
+            });
+            step += this.period;
+          }
+          break;
+        }
       }
-      let dataSeries = { type: 'line', color: getRandomColor() };
+      let dataSeries = { type: 'line', color: '#000000' };
       dataSeries.dataPoints = dataPoints;
       data.push(dataSeries);
       return data;
@@ -280,33 +350,56 @@ export class Channel extends Source {
     chart.render();
   }
 
-  renderSpectral(L) {
-    let dpf = [0];
-    for (let k = 1; k < this.measuresCount / 2; k++) {
-      const complexRe = this.values.reduce(
-        (previousValue, currentValue, index) =>
-          previousValue +
-          currentValue *
-            Math.cos((-2 * Math.PI * k * index) / this.measuresCount)
+  renderSpectral(L, channelsCount, signals) {
+    let A, P, Alg, Plg;
+    [A, P, Alg, Plg] = this.#getSpectralData(L);
+    const signal = new Signal(
+      `Спектральный анализ ${this.name}`,
+      4,
+      this.measuresCount / 2 - 1,
+      this.frequency,
+      this.startTime,
+      `signal${parseInt(this.signalId.match(/\d+/g)[0]) + 1}`
+    );
+    for (let i = 0; i < signal.channelsCount; i++) {
+      let channelName;
+      let data;
+      switch (i) {
+        case 0: {
+          channelName = 'Амплитудный спектр';
+          data = A;
+          break;
+        }
+        case 1: {
+          channelName = 'СПМ';
+          data = P;
+          break;
+        }
+        case 2: {
+          channelName = 'Логарифмический амплитудный спектр';
+          data = Alg;
+          break;
+        }
+        case 3: {
+          channelName = 'Логарифмический СПМ';
+          data = Plg;
+          break;
+        }
+      }
+      const channel = new Channel(
+        channelName,
+        signal.measuresCount,
+        signal.frequency,
+        signal.startTime,
+        `chart${channelsCount + i}`,
+        signal.id
       );
-      const complexIm = this.values.reduce(
-        (previousValue, currentValue, index) =>
-          previousValue +
-          currentValue *
-            Math.sin((-2 * Math.PI * k * index) / this.measuresCount)
-      );
-      const value = {
-        real: complexRe,
-        imaginary: complexIm,
-      };
-      dpf.push(value);
+      channel.values = data;
+      channel.mode = 'spectral';
+      signal.channels.push(channel);
     }
-    const amplitudeSpectre = dpf
-      .map((value) => {
-        Math.sqrt(value.real * value.real + value.imaginary * value.imaginary);
-      })
-      .pop();
-    const spm = amplitudeSpectre.map((value) => value * value);
+    signal.renderChannels();
+    signals.push(signal);
   }
 
   _createScroll() {

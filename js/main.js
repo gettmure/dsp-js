@@ -1,7 +1,7 @@
 import { showSignalInfo } from './info_modal.js';
 import { parseTxtFile } from './parser.js';
 import { createChannelsCheckboxes, saveFile } from './save_file.js';
-import { createStatisticsButtons } from './analysis.js';
+import { createChannelChoiceButtons } from './analysis.js';
 import {
   createModel,
   switchModelType,
@@ -116,16 +116,11 @@ $(document).on('click', '.channel-btn', function () {
   const clickedButton = this;
   const signalId = $(clickedButton).parent().attr('id');
   const chartId = $(clickedButton).attr('id');
-  const isSuperposition = chartId.match(/superposition/gm) != null;
   const signal = findElementById(signals, signalId);
   if (isModel(chartId)) {
     source = findElementById(signal.models, chartId);
   } else {
-    if (isSuperposition) {
-      source = findElementById(signal.superpositions, chartId);
-    } else {
-      source = findElementById(signal.channels, chartId);
-    }
+    source = findElementById(signal.channels, chartId);
   }
   source.showChart();
 });
@@ -200,13 +195,15 @@ $('#show-signal-navigation-menu-btn').click(function () {
   isOpened = !isOpened;
 });
 
-$(document).on('click', '#statistics-btn', function () {
+$(document).on('click', '.analysis-btn', function () {
   $('#statistics-container').css('display', 'none');
-  createStatisticsButtons(signals);
+  const signalId = $('.signal-choice').val();
+  createChannelChoiceButtons(signals, signalId);
 });
 
 $(document).on('change', '.signal-choice', function () {
-  createStatisticsButtons(signals);
+  const signalId = $(this).val();
+  createChannelChoiceButtons(signals, signalId);
 });
 
 $(document).on('click', '#create-statistics-btn', function () {
@@ -234,5 +231,11 @@ $(document).on('click', '#create-spectral-btn', function () {
   } else {
     source = findElementById(signal.channels, sourceId);
   }
-  source.renderSpectral(smoothParameter);
+  const channelsCount =
+    parseInt(
+      signals[signals.length - 1].channels[
+        signals[signals.length - 1].channels.length - 1
+      ].id.match(/\d+/g)[0]
+    ) + 1;
+  source.renderSpectral(smoothParameter, channelsCount, signals);
 });
