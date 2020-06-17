@@ -107,7 +107,7 @@ export class Channel extends Source {
         });
       }
       const Alg = A.map((value) => (value == 0 ? 0 : 20 * Math.log10(value)));
-      const Plg = P.map((value) => 10 * Math.log10(value));
+      const Plg = P.map((value) => (value == 0 ? 0 : 20 * Math.log10(value)));
       return [A, P, Alg, Plg];
     };
 
@@ -143,6 +143,7 @@ export class Channel extends Source {
       switch (this.mode) {
         case 'spectral': {
           let step = 0;
+          this.recordingTime = 0;
           for (let i = 0; i < this.measuresCount; i++) {
             dataPoints.push({
               x: step,
@@ -150,6 +151,7 @@ export class Channel extends Source {
             });
             step = i / (this.measuresCount * this.period);
           }
+          this.endTime = step;
           break;
         }
         default: {
@@ -177,7 +179,11 @@ export class Channel extends Source {
         min = array[i] < min ? array[i] : min;
         max = array[i] > max ? array[i] : max;
       }
-      this.minimalValue = min;
+      if (this.mode == 'spectral') {
+        this.minimalValue = 0;
+      } else {
+        this.minimalValue = min;
+      }
       this.maximalValue = max;
     };
 
@@ -237,6 +243,8 @@ export class Channel extends Source {
         valueFormatString: ' ',
         minimum: this.minimalValue,
         maximum: this.maximalValue,
+        viewportMaximum: this.maximalValue,
+        viewportMinimum: this.minimalValue,
       },
       axisX: {
         title: '',
@@ -350,7 +358,7 @@ export class Channel extends Source {
     chart.render();
   }
 
-  renderSpectral(L, channelsCount, signals) {
+  renderSpectral(L, channelsCount, signals, id) {
     let A, P, Alg, Plg;
     [A, P, Alg, Plg] = this.#getSpectralData(L);
     const signal = new Signal(
@@ -359,8 +367,9 @@ export class Channel extends Source {
       this.measuresCount / 2 - 1,
       this.frequency,
       this.startTime,
-      `signal${parseInt(this.signalId.match(/\d+/g)[0]) + 1}`
+      `signal${id}`
     );
+    console.log(signal.measuresCount);
     for (let i = 0; i < signal.channelsCount; i++) {
       let channelName;
       let data;
@@ -396,10 +405,11 @@ export class Channel extends Source {
       );
       channel.values = data;
       channel.mode = 'spectral';
+      channel.minimalValue = 0;
       signal.channels.push(channel);
     }
-    signal.renderChannels();
     signals.push(signal);
+    signal.renderChannels();
   }
 
   _createScroll() {

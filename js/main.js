@@ -222,7 +222,7 @@ $(document).on('click', '#create-statistics-btn', function () {
 
 $(document).on('click', '#create-spectral-btn', function () {
   const signalId = $('.signal-choice').val();
-  const sourceId = $('.channel-choice').val();
+  const sourceId = $('#spectral-channel').val();
   const smoothParameter = $('#smoothing-parameter').val();
   const signal = findElementById(signals, signalId);
   let source;
@@ -231,11 +231,11 @@ $(document).on('click', '#create-spectral-btn', function () {
   } else {
     source = findElementById(signal.channels, sourceId);
   }
-  const channelsCount =
-    parseInt(
-      signals[signals.length - 1].channels[
-        signals[signals.length - 1].channels.length - 1
-      ].id.match(/\d+/g)[0]
-    ) + 1;
-  source.renderSpectral(smoothParameter, channelsCount, signals);
+  let channelsCount = 0;
+  signals.forEach((signal) => {
+    channelsCount += signal.channels.length + signal.models.length;
+  });
+  let newSignalId =
+    parseInt(signals[signals.length - 1].id.match(/\d+/g)[0]) + 1;
+  source.renderSpectral(smoothParameter, channelsCount, signals, newSignalId);
 });
