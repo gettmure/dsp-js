@@ -239,3 +239,19 @@ $(document).on('click', '#create-spectral-btn', function () {
     parseInt(signals[signals.length - 1].id.match(/\d+/g)[0]) + 1;
   source.renderSpectral(smoothParameter, channelsCount, signals, newSignalId);
 });
+
+$(document).on('click', '#create-spectro-btn', function () {
+  const signalId = $('.signal-choice').val();
+  const sourceId = $('#spectro-channel').val();
+  const width = $('#width').val();
+  const height = $('#height').val();
+  const coef = $('#coeff-n').val();
+  const signal = findElementById(signals, signalId);
+  let source;
+  if (isModel(sourceId)) {
+    source = findElementById(signal.models, sourceId);
+  } else {
+    source = findElementById(signal.channels, sourceId);
+  }
+  source.renderSpectro(width, height, coef);
+});

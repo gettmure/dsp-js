@@ -369,7 +369,6 @@ export class Channel extends Source {
       this.startTime,
       `signal${id}`
     );
-    console.log(signal.measuresCount);
     for (let i = 0; i < signal.channelsCount; i++) {
       let channelName;
       let data;
@@ -410,6 +409,144 @@ export class Channel extends Source {
     }
     signals.push(signal);
     signal.renderChannels();
+  }
+
+  renderSpectro(width, height, coef) {
+    const sectionBase = this.measuresCount / width;
+    const sectionN = parseInt(sectionBase * coef);
+    const N = 2 * height;
+    let matrix = [];
+    let NN = N;
+    let L;
+    if (sectionN > N) {
+      while (NN < sectionN) {
+        NN += N;
+      }
+      L = NN / N;
+    } else {
+      NN = N;
+      L = 1;
+    }
+    for (let i = 0; i < width; i++) {
+      let values = [];
+      let A = [];
+      const n0 = i * parseInt(sectionBase);
+      for (let j = n0; j < n0 + sectionN; j++) {
+        const value = this.values[j];
+        if (value == undefined) {
+          break;
+        }
+        values.push(value);
+      }
+      const average =
+        values.reduce(
+          (accumulator, currentValue) => accumulator + currentValue
+        ) / sectionN;
+      values = values.map((value, index) => {
+        const W =
+          0.54 - 0.46 * Math.cos((2 * Math.PI * index) / (sectionN - 1));
+        return (value - average) * W;
+      });
+      for (let j = sectionN; j < NN; j++) {
+        values.push(0);
+      }
+      if (L == 1) {
+        for (let j = 0; j < height; j++) {
+          const complexRe = values.reduce(
+            (previousValue, currentValue, index) =>
+              previousValue +
+              currentValue * Math.cos((-2 * Math.PI * j * index) / N)
+          );
+          const complexIm = values.reduce(
+            (previousValue, currentValue, index) =>
+              previousValue +
+              currentValue * Math.sin((-2 * Math.PI * j * index) / N)
+          );
+          const value = {
+            real: complexRe,
+            imaginary: complexIm,
+          };
+          A.push(value);
+        }
+        A = A.map((value) => {
+          return (
+            this.period *
+            Math.sqrt(
+              value.real * value.real + value.imaginary * value.imaginary
+            )
+          );
+        });
+      }
+      if (L > 1) {
+        const L1 = -(L - 1) / 2;
+        const L2 = L / 2;
+        for (let j = 0; j < NN / 2; j++) {
+          const complexRe = values.reduce(
+            (previousValue, currentValue, index) =>
+              previousValue +
+              currentValue * Math.cos((-2 * Math.PI * j * index) / N)
+          );
+          const complexIm = values.reduce(
+            (previousValue, currentValue, index) =>
+              previousValue +
+              currentValue * Math.sin((-2 * Math.PI * j * index) / N)
+          );
+          const value = {
+            real: complexRe,
+            imaginary: complexIm,
+          };
+          A.push(value);
+        }
+        A = A.map((value) => {
+          return (
+            this.period *
+            Math.sqrt(
+              value.real * value.real + value.imaginary * value.imaginary
+            )
+          );
+        });
+        A = A.map((value, index) => {
+          sum = 0;
+          for (let j = L1; j <= L2; j++) {
+            sum += A[Math.abs(L * index + j)];
+          }
+          return sum / L;
+        });
+      }
+      matrix.push(A);
+    }
+    let initialCoef = 1;
+    let max = 0;
+    matrix.forEach((array) => {
+      array.forEach((value) => {
+        if (value > max) {
+          max = value;
+        }
+      });
+    });
+    // let bitmap = new Uint8ClampedArray(width * height * 4);
+    let canvas = document.getElementById('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    matrix.forEach((array, rowIndex) => {
+      array.forEach((value, columnIndex) => {
+        const B = parseInt(value % 256);
+        const G = parseInt(((value - B) / 256) % 256);
+        const R = parseInt((value - B) / (256 * 256) - G / 256);
+        ctx.fillStyle = `rgba(${R}, ${G}, ${B}, 1)`;
+        ctx.fillRect(columnIndex, rowIndex, 1, 1);
+        // bitmap[rowIndex + columnIndex] = R;
+        // bitmap[rowIndex + columnIndex + 1] = G;
+        // bitmap[rowIndex + columnIndex + 2] = B;
+        // bitmap[rowIndex + columnIndex + 3] = 255;
+        // columnIndex += 4;
+      });
+    });
+    // let image = new ImageData(bitmap, width, height);
+    // ctx.putImageData(image, 0, 0);
   }
 
   _createScroll() {

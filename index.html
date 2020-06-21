@@ -98,6 +98,8 @@
 								data-target="#statistics-modal">Статистики</button>
 								<button class="btn dropdown-item analysis-btn" id="spectral-btn" style="white-space:normal;" data-toggle="modal"
 								data-target="#spectral-modal">Спектральный анализ</button>
+								<button class="btn dropdown-item analysis-btn" id="spectro-btn" style="white-space:normal;" data-toggle="modal"
+								data-target="#spectro-modal">Частнотно-временной анализ</button>
 							</div>
 						</div>
 					</div>
@@ -359,6 +361,56 @@
 		</div>
 	</div>
 
+	<div class="modal fade" id="spectro-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalCenterTitle">
+						Частнотно-временной анализ
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="spectro-form">
+					<div class="modal-body">
+						<div id="options-container">
+							<div class="form-group">
+								<label for="signal-choice">Выберите сигнал</label>
+								<select class="form-control signal-choice">
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="channel-choice">Выберите канал</label>
+								<select class="form-control channel-choice" id="spectro-channel">
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="width">Ширина (width)</label>
+								<input class="parameter form-control" id="width">
+							</div>
+							<div class="form-group">
+								<label for="height">Высота (height)</label>
+								<input class="parameter form-control" id="height">
+							</div>
+							<div class="form-group">
+								<label for="coeff-n"">Коэффициент нахлёста</label>
+								<input class="parameter form-control" id="coeff-n" value=1.5>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">
+							Закрыть
+						</button>
+						<button type="button" class="btn btn-primary" id="create-spectro-btn" data-dismiss="modal">Применить</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
 	<div class="modal fade" id="signal-info-modal" tabindex="-1" role="dialog"
 		aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-scrollable" role="document">
@@ -380,6 +432,7 @@
 	</div>
 
 	<article class="d-flex justify-content-around containet-fluid">
+		<canvas id="canvas"></canvas>
 	</article>
 	<script src="js/main.js" type="module"></script>
 </body>
