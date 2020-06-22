@@ -478,8 +478,8 @@ export class Channel extends Source {
         });
       }
       if (L > 1) {
-        const L1 = -(L - 1) / 2;
-        const L2 = L / 2;
+        const L1 = parseInt(-(L - 1) / 2);
+        const L2 = parseInt(L / 2);
         for (let j = 0; j < NN / 2; j++) {
           const complexRe = values.reduce(
             (previousValue, currentValue, index) =>
@@ -506,16 +506,16 @@ export class Channel extends Source {
           );
         });
         A = A.map((value, index) => {
-          sum = 0;
+          let sum = 0;
           for (let j = L1; j <= L2; j++) {
-            sum += A[Math.abs(L * index + j)];
+            sum += A[Math.abs(index + j)];
           }
           return sum / L;
         });
       }
       matrix.push(A);
     }
-    let initialCoef = 1;
+    const initialCoef = 1;
     let max = 0;
     matrix.forEach((array) => {
       array.forEach((value) => {
@@ -524,27 +524,58 @@ export class Channel extends Source {
         }
       });
     });
-    let canvas1 = document.getElementById('canvas1');
-    canvas1.width = width;
-    canvas1.height = height;
-    let ctx = canvas1.getContext('2d');
+    let canvas = document.getElementById('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext('2d');
     ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas1.width, canvas1.height);
-    let imageData = ctx1.getImageData(0, 0, canvas1.width, canvas1.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     matrix.forEach((array, rowIndex) => {
-      for (let i = 0; i < array.length; i += 4) {
-        const index = rowIndex + i * imageData.width;
-        const B = parseInt(array[i] % 256);
-        const G = parseInt(((array[i] - B) / 256) % 256);
-        const R = parseInt((array[i] - B) / (256 * 256) - G / 256);
-        const avg = (R + G + B) / 3;
-        imageData.data[index * 4] = avg;
-        imageData.data[index * 4 + 1] = avg;
-        imageData.data[index * 4 + 2] = avg;
-        imageData.data[index * 4 + 3] = 255;
+      for (let i = 0; i < array.length; i++) {
+        const pixelIndex = 4 * (rowIndex + i * imageData.width);
+        const intensity = Math.min(
+          255,
+          parseInt(
+            (matrix[rowIndex][array.length - i - 1] / max) * 255 * initialCoef
+          )
+        );
+        imageData.data[pixelIndex] = intensity;
+        imageData.data[pixelIndex + 1] = intensity;
+        imageData.data[pixelIndex + 2] = intensity;
+        imageData.data[pixelIndex + 3] = 255;
       }
     });
-    ctx2.putImageData(imageData, 0, 0);
+    ctx.putImageData(imageData, 0, 0);
+    if ($('#spectrogram').css('display') == 'none') {
+      $('#spectrogram').css('display', 'flex');
+    }
+    $(function () {
+      $('#spectrogram-slider').slider({
+        orientation: 'vertical',
+        min: 0,
+        max: 50,
+        value: 0,
+        slide: function (e, ui) {
+          let previousValue = $(this).slider('value');
+          let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const pixelsCount = imageData.data.length;
+          let brightness = ui.value;
+          if (previousValue > ui.value) {
+            brightness = -brightness;
+          }
+          for (let i = 0; i < pixelsCount; i++) {
+            if (i == 0 || (i - 3) % 4 != 0) {
+              const newValue = Math.trunc(
+                imageData.data[i] + imageData.data[i] * (brightness / 100)
+              );
+              imageData.data[i] = Math.max(0, Math.min(255, newValue));
+            }
+          }
+          ctx.putImageData(imageData, 0, 0);
+        },
+      });
+    });
   }
 
   _createScroll() {

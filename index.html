@@ -398,13 +398,19 @@
 								<label for="coeff-n"">Коэффициент нахлёста</label>
 								<input class="parameter form-control" id="coeff-n" value=1.5>
 							</div>
+							<div class="form-group">
+							</div>
+						</div>
+						<div id="spectrogram">
+							<canvas id="canvas"></canvas>
+							<div id="spectrogram-slider"></div>
 						</div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">
 							Закрыть
 						</button>
-						<button type="button" class="btn btn-primary" id="create-spectro-btn" data-dismiss="modal">Применить</button>
+						<button type="button" class="btn btn-primary" id="create-spectro-btn" >Применить</button>
 					</div>
 				</form>
 			</div>
@@ -432,7 +438,6 @@
 	</div>
 
 	<article class="d-flex justify-content-around containet-fluid">
-		<!-- <canvas id="canvas1"></canvas> -->
 	</article>
 	<script src="js/main.js" type="module"></script>
 </body>

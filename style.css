@@ -108,3 +108,16 @@ article {
   width: 400px;
   height: 200px;
 }
+
+#spectrogram {
+  display: none;
+}
+
+#spectrogram-slider {
+  height: inherit;
+}
+
+canvas {
+  width: 450px;
+  height: 400px;
+}
