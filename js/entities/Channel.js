@@ -253,7 +253,7 @@ export class Channel extends Source {
       data: chartData,
     });
     $(
-      '.channel-btn > div > .canvasjs-chart-canvas + .canvasjs-chart-canvas'
+      '.channel-btn > div > .canvasjs-chart-canvas1 + .canvasjs-chart-canvas1'
     ).css('position', '');
     this.demoChart.render();
     $('article').append(
@@ -524,29 +524,28 @@ export class Channel extends Source {
         }
       });
     });
-    // let bitmap = new Uint8ClampedArray(width * height * 4);
-    let canvas = document.getElementById('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    let ctx = canvas.getContext('2d');
+    let canvas1 = document.getElementById('canvas1');
+    canvas1.width = width;
+    canvas1.height = height;
+    console.log(matrix);
+    let ctx = canvas1.getContext('2d');
     ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, canvas1.width, canvas1.height);
+    let imageData = ctx1.getImageData(0, 0, canvas1.width, canvas1.height);
     matrix.forEach((array, rowIndex) => {
-      array.forEach((value, columnIndex) => {
-        const B = parseInt(value % 256);
-        const G = parseInt(((value - B) / 256) % 256);
-        const R = parseInt((value - B) / (256 * 256) - G / 256);
-        ctx.fillStyle = `rgba(${R}, ${G}, ${B}, 1)`;
-        ctx.fillRect(columnIndex, rowIndex, 1, 1);
-        // bitmap[rowIndex + columnIndex] = R;
-        // bitmap[rowIndex + columnIndex + 1] = G;
-        // bitmap[rowIndex + columnIndex + 2] = B;
-        // bitmap[rowIndex + columnIndex + 3] = 255;
-        // columnIndex += 4;
-      });
+      for (let i = 0; i < array.length; i += 4) {
+        const index = rowIndex + i * imageData.width;
+        const B = parseInt(array[i] % 256);
+        const G = parseInt(((array[i] - B) / 256) % 256);
+        const R = parseInt((array[i] - B) / (256 * 256) - G / 256);
+        const avg = (R + G + B) / 3;
+        imageData.data[index * 4] = avg;
+        imageData.data[index * 4 + 1] = avg;
+        imageData.data[index * 4 + 2] = avg;
+        imageData.data[index * 4 + 3] = 255;
+      }
     });
-    // let image = new ImageData(bitmap, width, height);
-    // ctx.putImageData(image, 0, 0);
+    ctx2.putImageData(imageData, 0, 0);
   }
 
   _createScroll() {
