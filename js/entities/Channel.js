@@ -253,7 +253,7 @@ export class Channel extends Source {
       data: chartData,
     });
     $(
-      '.channel-btn > div > .canvasjs-chart-canvas1 + .canvasjs-chart-canvas1'
+      '.channel-btn > div > .canvasjs-chart-canvas + .canvasjs-chart-canvas'
     ).css('position', '');
     this.demoChart.render();
     $('article').append(
@@ -527,7 +527,6 @@ export class Channel extends Source {
     let canvas1 = document.getElementById('canvas1');
     canvas1.width = width;
     canvas1.height = height;
-    console.log(matrix);
     let ctx = canvas1.getContext('2d');
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas1.width, canvas1.height);
