@@ -241,11 +241,11 @@ $(document).on('click', '#create-spectral-btn', function () {
 });
 
 $(document).on('click', '#create-spectro-btn', function () {
-  const signalId = $('.signal-choice').val();
+  const signalId = $('#spectro-signal').val();
   const sourceId = $('#spectro-channel').val();
-  const width = $('#width').val();
-  const height = $('#height').val();
-  const coef = $('#coeff-n').val();
+  const width = parseInt($('#width').val());
+  const height = parseInt($('#height').val());
+  const coef = parseFloat($('#coeff-n').val());
   const signal = findElementById(signals, signalId);
   let source;
   if (isModel(sourceId)) {

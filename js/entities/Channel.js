@@ -412,7 +412,48 @@ export class Channel extends Source {
   }
 
   renderSpectro(width, height, coef) {
-    const sectionBase = this.measuresCount / width;
+    let pointsCount, specifiedValues;
+    const defineRangeVariables = (leftLimit, rightLimit) => {
+      const pointsCount = Math.round((rightLimit - leftLimit) / this.period);
+      const rangeIsChanged =
+        pointsCount != this.measuresCount &&
+        leftLimit != null &&
+        rightLimit != null;
+      if (rangeIsChanged) {
+        const closestValueToLeftLimit = this.chart.data[0].dataPoints
+          .reduce((prev, curr) => {
+            return Math.abs(curr.x.getTime() - leftLimit) <
+              Math.abs(prev.x.getTime() - leftLimit)
+              ? curr
+              : prev;
+          })
+          .x.getTime();
+        const index = this.chart.data[0].dataPoints.findIndex((point) => {
+          const milliseconds = point.x.getTime();
+          return milliseconds == closestValueToLeftLimit;
+        });
+        let values = [];
+        for (let i = index; i < index + pointsCount; i++) {
+          values.push(this.values[i]);
+        }
+        return [pointsCount, values];
+      } else {
+        return [this.measuresCount, this.values];
+      }
+    };
+    const leftLimit =
+      this.chart.axisX[0] == undefined
+        ? null
+        : this.chart.axisX[0].viewportMinimum;
+    const rightLimit =
+      this.chart.axisX[0] == undefined
+        ? null
+        : this.chart.axisX[0].viewportMaximum;
+    [pointsCount, specifiedValues] = defineRangeVariables(
+      leftLimit,
+      rightLimit
+    );
+    const sectionBase = pointsCount / width;
     const sectionN = parseInt(sectionBase * coef);
     const N = 2 * height;
     let matrix = [];
@@ -432,7 +473,7 @@ export class Channel extends Source {
       let A = [];
       const n0 = i * parseInt(sectionBase);
       for (let j = n0; j < n0 + sectionN; j++) {
-        const value = this.values[j];
+        const value = specifiedValues[j];
         if (value == undefined) {
           break;
         }
@@ -547,9 +588,6 @@ export class Channel extends Source {
       }
     });
     ctx.putImageData(imageData, 0, 0);
-    if ($('#spectrogram').css('display') == 'none') {
-      $('#spectrogram').css('display', 'flex');
-    }
     $(function () {
       $('#spectrogram-slider').slider({
         orientation: 'vertical',
@@ -576,6 +614,9 @@ export class Channel extends Source {
         },
       });
     });
+    if ($('#spectrogram').css('display') == 'none') {
+      $('#spectrogram').css('display', 'flex');
+    }
   }
 
   _createScroll() {

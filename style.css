@@ -117,7 +117,7 @@ article {
   height: inherit;
 }
 
-canvas {
+.spectro-canvas {
   width: 450px;
   height: 400px;
 }
